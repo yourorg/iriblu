@@ -26,9 +26,13 @@ function TestRun() {
   pushd ${PROJECT_ROOT} &>/dev/null;
 
     echo -e "${PRETTY} run in dev mode ...";
+    meteor reset;
     nohup .scripts/startInDevMode.sh &
 
+    echo -e "${PRETTY} linting and unit tests ...";
     meteor npm test;
+
+    echo -e "${PRETTY} functional tests ...";
     .scripts/startAcceptanceTest.sh;
 
   popd &>/dev/null;
@@ -37,8 +41,8 @@ function TestRun() {
 
 }
 
-export GOT_IT="@@@@@@@";
+export EXCLUSIONS="packages/package_exclusions.json";
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  TestRun .mmks/meteor-mantra-kickstarter;
+  TestRun ./mmks/meteor-mantra-kickstarter;
 fi;
 

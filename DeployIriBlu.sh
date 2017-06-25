@@ -50,12 +50,15 @@ popd &>/dev/null;
 pushd ../IriBluBuilt &>/dev/null;
 
   echo -e "${PRETTY} install 'IriBluBuilt' project ..."
+  .scripts/preFlightCheck.sh;
+  . ${HOME}/.userVars.sh;
   ./install_all.sh;
 
 popd &>/dev/null;
 
 source TestIriBluProject.sh;
-echo -e "${PRETTY} test 'IriBluBuilt' project   ..."
+echo -e "${PRETTY} test 'IriBluBuilt' project   ...";
+export PACKAGE_EXCLUSIONS="$(pwd)/packages/package_exclusions.json";
 TestRun ../IriBluBuilt;
 
 echo -e "|||||||||||||||||||||||||||||||||||||||||";
