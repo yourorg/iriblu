@@ -15,7 +15,10 @@ if [[ ! -d ${HOME}/tools/HabitatForMeteor ]]; then
 else
   echo "Found existing '../HabitatForMeteor'. Updating.";
   pushd ${HOME}/tools/HabitatForMeteor &>/dev/null;
+    echo "Updating.";
     git pull;
+    echo "Updating submodules.";
+    git submodule update --recursive;
   popd &>/dev/null;
 fi;
 

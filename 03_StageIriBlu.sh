@@ -56,7 +56,10 @@ pushd ../IriBluBuilt &>/dev/null;
 
 popd &>/dev/null;
 
-source TestIriBluProject.sh;
+pwd;
+  read -n 1 -s -p "Press any key to continue";
+
+source 02_TestIriBluProject.sh;
 echo -e "${PRETTY} test 'IriBluBuilt' project   ...";
 export PACKAGE_EXCLUSIONS="$(pwd)/packages/package_exclusions.json";
 TestRun ../IriBluBuilt;

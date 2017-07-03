@@ -1,0 +1,10 @@
+# This is the configuration file for continuous deployment of
+# your project in CircleCi.
+general:
+  branches:
+    only:
+      - master
+
+test:
+  post:
+    - ./semver_test.sh

@@ -6,6 +6,7 @@ sudo ls >/dev/null;
 
 echo -e "${PRETTY} purge 'mmks' ...";
 rm -fr mmks;
+
 if [[ ! -d ../mmks ]]; then
   echo "../mmks not found. Cloning into parent directory.";
   pushd .. &>/dev/null;
@@ -24,6 +25,8 @@ fi;
 
 echo -e "${PRETTY} copy in 'mmks' ..."
 cp -r ../mmks .;
+
+read -n 1 -s -p "Press any key to continue";
 
 echo -e "${PRETTY} purge 'mmks' demo packages..."
 rm -fr mmks/.pkgs/mmks_*;
@@ -44,6 +47,8 @@ pushd mmks &>/dev/null;
     .scripts/preFlightCheck.sh;
   fi;
   echo -e "${PRETTY} install 'IriBlu' ...";
+  read -n 1 -s -p "Press any key to continue";
+
   ./install_all.sh;
 
 popd &>/dev/null;

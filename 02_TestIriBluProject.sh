@@ -26,14 +26,28 @@ function TestRun() {
   pushd ${PROJECT_ROOT} &>/dev/null;
 
     echo -e "${PRETTY} run in dev mode ...";
+    pwd;
+    npm knex --version;
+
     meteor reset;
     nohup .scripts/startInDevMode.sh &
 
     echo -e "${PRETTY} linting and unit tests ...";
     meteor npm test;
 
-    echo -e "${PRETTY} functional tests ...";
-    .scripts/startAcceptanceTest.sh;
+    if [[ -z ${DISPLAY} ]]; then
+      echo -e "${PRETTY} No GUI found for browser display.
+      Cannot start functional tests.
+      Giving up.";
+    else
+      echo -e "\n\nNOTE:To monitor app output during test, use :
+
+      tail -fn 200 ${PROJECT_ROOT}/nohup.out;
+      ";
+      echo -e "${PRETTY} starting functional tests ...";
+      .scripts/startAcceptanceTest.sh;
+    fi;
+
 
   popd &>/dev/null;
 
