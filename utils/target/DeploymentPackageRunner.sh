@@ -4,6 +4,10 @@ declare SCRIPT=$(readlink -f "$0");
 declare SCRIPTPATH=$(dirname "$SCRIPT");
 declare SCRIPTNAME=$(basename "${SCRIPT}");
 
+PRTY="\n  ==> Runner ::";
+LOG="/tmp/${SCRIPTNAME}.log";
+touch ${LOG};
+
 source ${HOME}/.bash_login;
 
 function errorNoSecretsFileSpecified() {
@@ -29,9 +33,9 @@ NGINX_VHOSTS_PUBLICATIONS="${NGINX_WORK_DIRECTORY}/sites-enabled";
 NGINX_ROOT_DIRECTORY="${NGINX_WORK_DIRECTORY}/www-data";
 NGINX_VIRTUAL_HOST_FILE_PATH=${NGINX_VHOSTS_DEFINITIONS}/${VIRTUAL_HOST_DOMAIN_NAME};
 
-function createNginxVHostDirectories() {
+function prepareNginxVHostDirectories() {
 
-  echo -e "${PRETTY} Creating Nginx virtual host directory structure." | tee -a ${LOG};
+  echo -e "${PRTY} Creating Nginx virtual host directory structure." | tee -a ${LOG};
   sudo -A mkdir -p ${NGINX_VHOSTS_DEFINITIONS};
   sudo -A mkdir -p ${NGINX_VHOSTS_PUBLICATIONS};
   # sudo -A mkdir -p ${NGINX_VHOSTS_CERTIFICATES};
@@ -39,21 +43,21 @@ function createNginxVHostDirectories() {
   sh ${SCRIPTPATH}/index.html.template.sh > index.html;
   sudo -A cp index.html ${NGINX_ROOT_DIRECTORY};
 
-  echo -e "${PRETTY} Creating Nginx virtual host files '${NGINX_VIRTUAL_HOST_FILE_PATH}' from templates." | tee -a ${LOG};
+  echo -e "${PRTY} Creating Nginx virtual host files '${NGINX_VIRTUAL_HOST_FILE_PATH}' from templates." | tee -a ${LOG};
   sh ${SCRIPTPATH}/virtual.http.host.conf.template.sh > ${VIRTUAL_HOST_DOMAIN_NAME}_NOCERT;
   sh ${SCRIPTPATH}/virtual.https.host.conf.template.sh > ${VIRTUAL_HOST_DOMAIN_NAME}_WITHCERT;
   sudo -A cp ${VIRTUAL_HOST_DOMAIN_NAME}* ${NGINX_VHOSTS_DEFINITIONS};
 
 
-  # echo -e "${PRETTY} Enabling temporary Nginx HTTP virtual host ${VIRTUAL_HOST_DOMAIN_NAME}." | tee -a ${LOG};
+  # echo -e "${PRTY} Enabling temporary Nginx HTTP virtual host ${VIRTUAL_HOST_DOMAIN_NAME}." | tee -a ${LOG};
   # sudo -A ln -sf ${NGINX_VIRTUAL_HOST_FILE_PATH}_NOCERT ${NGINX_VHOSTS_PUBLICATIONS}/${VIRTUAL_HOST_DOMAIN_NAME};
 
-  echo -e "${PRETTY} Enabling Nginx HTTP virtual host ${VIRTUAL_HOST_DOMAIN_NAME}." | tee -a ${LOG};
+  echo -e "${PRTY} Enabling Nginx HTTP virtual host ${VIRTUAL_HOST_DOMAIN_NAME}." | tee -a ${LOG};
   sudo -A ln -sf ${NGINX_VIRTUAL_HOST_FILE_PATH}_WITHCERT ${NGINX_VHOSTS_PUBLICATIONS}/${VIRTUAL_HOST_DOMAIN_NAME};
 
   LOG_DIR="/var/log/nginx";
   VHOST_LOG_DIR="${LOG_DIR}/${VIRTUAL_HOST_DOMAIN_NAME}";
-  echo -e "${PRETTY} Creating logging destinations for virtual host : ${VHOST_LOG_DIR}." | tee -a ${LOG};
+  echo -e "${PRTY} Creating logging destinations for virtual host : ${VHOST_LOG_DIR}." | tee -a ${LOG};
   sudo -A mkdir -p ${VHOST_LOG_DIR};
   sudo -A touch ${VHOST_LOG_DIR}/access.log;
   sudo -A touch ${VHOST_LOG_DIR}/error.log;
@@ -68,7 +72,7 @@ LETSENCRYPT_ACCTS="${LETSENCRYPT_HOME}/accounts/acme-v01.api.letsencrypt.org/dir
 
 function obtainLetsEncryptSSLCertificate() {
 
-  echo -e "${PRETTY} Preparing CertBot (Let's Encrypt) config file '${LETSENCRYPT_HOME}/cli.ini'
+  echo -e "${PRTY} Preparing CertBot (Let's Encrypt) config file '${LETSENCRYPT_HOME}/cli.ini'
                   using '${SCRIPTPATH}/cli.ini.template.sh'
   -------------  ${LETSENCRYPT_HOME}/cli.ini  ---------------";
   sudo -A mkdir -p ${LETSENCRYPT_HOME};
@@ -99,7 +103,7 @@ function obtainLetsEncryptSSLCertificate() {
   fi;
 
   if [[  "${REQUEST_CERT}" = "YES" ]]; then
-    echo -e "${PRETTY} Installing CertBot certificate";
+    echo -e "${PRTY} Installing CertBot certificate";
     sudo -A certbot certonly;
   fi;
 
@@ -109,7 +113,7 @@ function obtainLetsEncryptSSLCertificate() {
       # # sudo -A chown -R hab:hab ${CERT_PATH};
       # # ls -l "${CERT_PATH}";
 
-      # echo -e "${PRETTY} Moving '${VIRTUAL_HOST_DOMAIN_NAME}' site certificate from '${CERT_PATH}'
+      # echo -e "${PRTY} Moving '${VIRTUAL_HOST_DOMAIN_NAME}' site certificate from '${CERT_PATH}'
       #                                     to ${NGINX_VHOSTS_CERTIFICATES}/${VIRTUAL_HOST_DOMAIN_NAME}." | tee -a ${LOG};
       # sudo -A mkdir -p             ${LETSENCRYPT_LIVE}/${VIRTUAL_HOST_DOMAIN_NAME};
       # sudo -A mkdir -p             ${LETSENCRYPT_ARCH}/${VIRTUAL_HOST_DOMAIN_NAME};
@@ -173,7 +177,7 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
 
   source environment.sh;
 
-  # echo -e "${PRETTY} Preparing 'user.toml' file for core/postgresql bundle; in '${SVC_DIR}/postgresql'." | tee -a ${LOG};
+  # echo -e "${PRTY} Preparing 'user.toml' file for core/postgresql bundle; in '${SVC_DIR}/postgresql'." | tee -a ${LOG};
   # declare POSTGRES_SERVICE="${SVC_DIR}/postgresql";
   # sudo -A mkdir -p ${POSTGRES_SERVICE};
   # sudo -A chown root:root ${POSTGRES_SERVICE};
@@ -185,7 +189,7 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
   # sudo -A chmod 666 ${POSTGRES_USER_TOML};
 
 
-  # echo -e "${PRETTY} Upserting super user pwd into core/postgresql '${POSTGRES_USER_TOML}' file." | tee -a ${LOG};
+  # echo -e "${PRTY} Upserting super user pwd into core/postgresql '${POSTGRES_USER_TOML}' file." | tee -a ${LOG};
   # export PG_PWD=$(cat ./settings.json | jq -r .PG_PWD);
   echo -e "
 
@@ -206,7 +210,10 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
   # echo -e "--------------------------------------------------
   # ";
 
-  createNginxVHostDirectories;
+  echo -e "${PRTY} Stopping the Nginx systemd service, in case it's running . . ." | tee -a ${LOG};
+  sudo -A systemctl stop nginx.service >> ${LOG} 2>&1;
+
+  prepareNginxVHostDirectories;
 
   if [[  "A" = "A" ]]; then
     echo -e "
@@ -217,6 +224,15 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
     #obtainLetsEncryptSSLCertificate;
   fi;
 
+  echo -e "${PRTY} Substituting Nginx configuration file ." | tee -a ${LOG};
+  sudo -A mkdir -p ${NGINX_WORK_DIRECTORY};
+  sh ${SCRIPTPATH}/nginx.conf.template.sh > nginx.conf;
+  sudo -A cp nginx.conf ${NGINX_WORK_DIRECTORY};
+
+  echo -e "${PRTY} Restarting the Nginx systemd service . . ." | tee -a ${LOG};
+  sudo -A systemctl stop nginx.service >> ${LOG} 2>&1;
+
+
 
 echo -e "
 $(pwd)
@@ -226,37 +242,29 @@ exit;
 
 
 
-  echo -e "${PRETTY} Creating Nginx user toml file '${NGINX_TOML_FILE_PATH}' from template." | tee -a ${LOG};
-  sudo -A mkdir -p ${NGINX_DIR};
-  sh ${SCRIPTPATH}/nginx.user.toml.template.sh > nginx.user.toml;
-  sudo -A cp nginx.user.toml ${NGINX_TOML_FILE_PATH};
 
 
+# echo "Logging '${SCRIPTNAME}' execution to '${LOG}'." | tee ${LOG};
+# echo -e "${PRTY} Stopping the '${SERVICE_UID}' systemd service, in case it's running . . ." | tee -a ${LOG};
+# sudo -A systemctl stop ${UNIT_FILE} >> ${LOG} 2>&1;
 
-PRETTY="\n  ==> Runner ::";
-LOG="/tmp/${SCRIPTNAME}.log";
-touch ${LOG};
-echo "Logging '${SCRIPTNAME}' execution to '${LOG}'." | tee ${LOG};
-echo -e "${PRETTY} Stopping the '${SERVICE_UID}' systemd service, in case it's running . . ." | tee -a ${LOG};
-sudo -A systemctl stop ${UNIT_FILE} >> ${LOG} 2>&1;
+# echo -e "${PRTY} Disabling the '${SERVICE_UID}' systemd service, in case it's enabled . . ." | tee -a ${LOG};
+# sudo -A systemctl disable ${UNIT_FILE} >> ${LOG} 2>&1;
 
-echo -e "${PRETTY} Disabling the '${SERVICE_UID}' systemd service, in case it's enabled . . ." | tee -a ${LOG};
-sudo -A systemctl disable ${UNIT_FILE} >> ${LOG} 2>&1;
+# echo -e "${PRTY} Deleting the '${SERVICE_UID}' systemd unit file, in case there's one already . . ." | tee -a ${LOG};
+# sudo -A rm /etc/systemd/system/${UNIT_FILE} >> ${LOG} 2>&1;
 
-echo -e "${PRETTY} Deleting the '${SERVICE_UID}' systemd unit file, in case there's one already . . ." | tee -a ${LOG};
-sudo -A rm /etc/systemd/system/${UNIT_FILE} >> ${LOG} 2>&1;
+# echo -e "${PRTY} Deleting director toml file '${DIRECTOR_TOML_FILE_PATH}', in case there's one already . . ." | tee -a ${LOG};
+# sudo -A rm -fr ${DIRECTOR_TOML_FILE_PATH} >> ${LOG};
 
-echo -e "${PRETTY} Deleting director toml file '${DIRECTOR_TOML_FILE_PATH}', in case there's one already . . ." | tee -a ${LOG};
-sudo -A rm -fr ${DIRECTOR_TOML_FILE_PATH} >> ${LOG};
+# echo -e "${PRTY} Ensuring Habitat Supervisor is available (installing if necessary...)" | tee -a ${LOG};
+# sudo -A hab install core/hab-sup >> ${LOG} 2>&1;
+# sudo -A hab pkg binlink core/hab-sup hab-sup;
+# pushd /bin >/dev/null;
+#   sudo -A ln -s /usr/local/bin/hab hab;
+# popd;
 
-echo -e "${PRETTY} Ensuring Habitat Supervisor is available (installing if necessary...)" | tee -a ${LOG};
-sudo -A hab install core/hab-sup >> ${LOG} 2>&1;
-sudo -A hab pkg binlink core/hab-sup hab-sup;
-pushd /bin >/dev/null;
-  sudo -A ln -s /usr/local/bin/hab hab;
-popd;
-
-# echo -e "${PRETTY} Ensuring Habitat Director is available (installing if necessary...)" | tee -a ${LOG};
+# echo -e "${PRTY} Ensuring Habitat Director is available (installing if necessary...)" | tee -a ${LOG};
 # sudo -A hab install core/hab-director; # > /dev/null 2>&1;
 # sudo -A hab pkg binlink core/hab-director hab-director;
 
@@ -265,20 +273,20 @@ MONGO_ORIGIN="billmeyer";
 # MONGO_ORIGIN="core";
 MONGO_PKG="mongodb";
 MONGO_INSTALLER="${MONGO_ORIGIN}/${MONGO_PKG}";
-echo -e "${PRETTY}  --> sudo -A hab pkg install '${MONGO_INSTALLER}'" | tee -a ${LOG};
+echo -e "${PRTY}  --> sudo -A hab pkg install '${MONGO_INSTALLER}'" | tee -a ${LOG};
 sudo -A hab pkg install ${MONGO_INSTALLER};
 
-echo -e "${PRETTY} Starting '${MONGO_INSTALLER}' momentarily to set permissions." | tee -a ${LOG};
+echo -e "${PRTY} Starting '${MONGO_INSTALLER}' momentarily to set permissions." | tee -a ${LOG};
 sudo -A hab start ${MONGO_INSTALLER} &
 
 sleep 3;
-echo -e "${PRETTY} Creating mongo admin user" | tee -a ${LOG};
+echo -e "${PRTY} Creating mongo admin user" | tee -a ${LOG};
 mongo >> ${LOG} <<EOFA
 use admin
 db.createUser({user: "admin",pwd:"password",roles:[{role:"root",db:"admin"}]})
 EOFA
 
-echo -e "${PRETTY} Creating '${YOUR_PKG}' db and owner 'meteor'" | tee -a ${LOG};
+echo -e "${PRTY} Creating '${YOUR_PKG}' db and owner 'meteor'" | tee -a ${LOG};
 mongo -u admin -p password admin >> ${LOG} <<EOFM
 use ${YOUR_PKG}
 db.createUser({user: "meteor",pwd:"${MONGODB_PWD}",roles:[{role:"dbOwner",db:"${YOUR_PKG}"},"readWrite"]})
@@ -286,9 +294,9 @@ EOFM
 
 
 
-echo -e "${PRETTY} Ensuring package '${PACKAGE_PATH}' is available" | tee -a ${LOG};
+echo -e "${PRTY} Ensuring package '${PACKAGE_PATH}' is available" | tee -a ${LOG};
 
-echo -e "${PRETTY}  --> sudo -A hab pkg install '${PACKAGE_PATH}'" | tee -a ${LOG};
+echo -e "${PRTY}  --> sudo -A hab pkg install '${PACKAGE_PATH}'" | tee -a ${LOG};
 sudo -A hab pkg install ${PACKAGE_PATH};
 
 PACKAGE_ABSOLUTE_PATH=$(sudo -A hab pkg path ${PACKAGE_PATH});
@@ -297,7 +305,7 @@ PACKAGE_UUID=${PACKAGE_ABSOLUTE_PATH#$DNLD_DIR/};
 YOUR_PKG_VERSION=$(echo ${PACKAGE_UUID} | cut -d / -f 1);
 YOUR_PKG_TIMESTAMP=$(echo ${PACKAGE_UUID} | cut -d / -f 2);
 
-echo -e "${PRETTY} Package universal unique ID is :: '${SERVICE_PATH}/${YOUR_PKG_VERSION}/${YOUR_PKG_TIMESTAMP}'" >>  ${LOG};
+echo -e "${PRTY} Package universal unique ID is :: '${SERVICE_PATH}/${YOUR_PKG_VERSION}/${YOUR_PKG_TIMESTAMP}'" >>  ${LOG};
 if [[ "X${YOUR_PKG_VERSION}X" = "XX" ]]; then
   echo "Invalid package version '${YOUR_PKG_VERSION}'."  | tee -a ${LOG};
   exit 1;
@@ -320,24 +328,24 @@ wait;
 sudo -A mkdir -p ${META_DIR};
 sudo -A mkdir -p ${WORK_DIR};
 
-# echo -e "${PRETTY} Creating director toml file '${DIRECTOR_TOML_FILE_PATH}' from template" | tee -a ${LOG};
+# echo -e "${PRTY} Creating director toml file '${DIRECTOR_TOML_FILE_PATH}' from template" | tee -a ${LOG};
 # ${SCRIPTPATH}/director.toml.template.sh > ${SCRIPTPATH}/${DIRECTOR_TOML_FILE};
-# echo -e "${PRETTY} Copying director toml file to '${META_DIR}' directory" | tee -a ${LOG};
+# echo -e "${PRTY} Copying director toml file to '${META_DIR}' directory" | tee -a ${LOG};
 # sudo -A cp ${SCRIPTPATH}/${DIRECTOR_TOML_FILE} ${META_DIR} >> ${LOG};
 
-# echo -e "${PRETTY} Creating systemd unit file to 'systemd' directory" | tee -a ${LOG};
+# echo -e "${PRTY} Creating systemd unit file to 'systemd' directory" | tee -a ${LOG};
 # ${SCRIPTPATH}/systemd.service.template.sh | sudo -A tee ${SCRIPTPATH}/${UNIT_FILE};
-# echo -e "${PRETTY} Copying unit file to 'systemd' directory" | tee -a ${LOG};
+# echo -e "${PRTY} Copying unit file to 'systemd' directory" | tee -a ${LOG};
 # sudo -A cp ${SCRIPTPATH}/${UNIT_FILE} /etc/systemd/system >> ${LOG};
 
-echo -e "${PRETTY} Creating systemd unit file to 'systemd' directory" | tee -a ${LOG};
+echo -e "${PRTY} Creating systemd unit file to 'systemd' directory" | tee -a ${LOG};
 ${SCRIPTPATH}/supervisor.service.template.sh | sudo -A tee ${SCRIPTPATH}/${UNIT_FILE};
-echo -e "${PRETTY} Copying unit file to 'systemd' directory" | tee -a ${LOG};
+echo -e "${PRTY} Copying unit file to 'systemd' directory" | tee -a ${LOG};
 sudo -A cp ${SCRIPTPATH}/${UNIT_FILE} /etc/systemd/system >> ${LOG};
 
-echo -e "${PRETTY} Creating user toml file '${USER_TOML_FILE_PATH}' from template" | tee -a ${LOG};
+echo -e "${PRTY} Creating user toml file '${USER_TOML_FILE_PATH}' from template" | tee -a ${LOG};
 ${SCRIPTPATH}/app.user.toml.template.sh > ${SCRIPTPATH}/${USER_TOML_FILE};
-echo -e "${PRETTY} Copying user toml file to '${WORK_DIR}' directory" | tee -a ${LOG};
+echo -e "${PRTY} Copying user toml file to '${WORK_DIR}' directory" | tee -a ${LOG};
 sudo -A cp ${SCRIPTPATH}/${USER_TOML_FILE} ${WORK_DIR} >> ${LOG};
 
 # ##########################
@@ -360,7 +368,7 @@ echo SECRETS_DIR=${SECRETS_DIR};
 echo SECRETS=${SECRETS};
 echo TARGET_SECRETS_PATH=${TARGET_SECRETS_PATH};
 
-echo -e "${PRETTY} Copying secrets file to '${SECRETS}' directory" | tee -a ${LOG};
+echo -e "${PRTY} Copying secrets file to '${SECRETS}' directory" | tee -a ${LOG};
 echo -e "sudo -A mkdir -p ${SECRETS} >> ${LOG};";
 echo -e "sudo -A cp -r ${TARGET_SECRETS_PATH}/* ${SECRETS} >> ${LOG};";
 echo -e "sudo -A chown -R hab:hab ${SECRETS} >> ${LOG};";
@@ -369,7 +377,7 @@ sudo -A mkdir -p ${SECRETS} >> ${LOG};
 sudo -A cp -r ${TARGET_SECRETS_PATH}/* ${SECRETS} >> ${LOG};
 sudo -A chown -R hab:hab ${SECRETS} >> ${LOG};
 
-# echo -e "${PRETTY} Copying Diffie-Hellman file to SSL directory" | tee -a ${LOG};
+# echo -e "${PRTY} Copying Diffie-Hellman file to SSL directory" | tee -a ${LOG};
 # echo -e " - From : ${SECRETS}/dh/*" | tee -a ${LOG};
 # echo -e " - To   : ${DIFFIE_HELLMAN_DIR}" | tee -a ${LOG};
 
@@ -382,15 +390,15 @@ sudo -A chown -R hab:hab ${SECRETS} >> ${LOG};
 # sudo -A ls -l ${DIFFIE_HELLMAN_DIR}/*;
 # sudo -A chmod    ug-w         ${DIFFIE_HELLMAN_DIR}/* >> ${LOG};
 
-# echo -e "${PRETTY} Copying Meteor settings file to '${WORK_DIR}/var' directory" | tee -a ${LOG};
+# echo -e "${PRTY} Copying Meteor settings file to '${WORK_DIR}/var' directory" | tee -a ${LOG};
 # sudo -A mkdir -p ${WORK_DIR}/var >> ${LOG};
 # sudo -A cp ${TARGET_SETTINGS_FILE} ${WORK_DIR}/var >> ${LOG};
 # sudo -A chown -R hab:hab ${WORK_DIR}/var >> ${LOG};
 
-echo -e "${PRETTY} Enabling the '${SERVICE_UID}' systemd service . . ." | tee -a ${LOG};
+echo -e "${PRTY} Enabling the '${SERVICE_UID}' systemd service . . ." | tee -a ${LOG};
 sudo -A systemctl enable ${UNIT_FILE};
 
-echo -e "${PRETTY} Ensuring there is a directory available for '${SERVICE_UID}' logs" | tee -a ${LOG};
+echo -e "${PRTY} Ensuring there is a directory available for '${SERVICE_UID}' logs" | tee -a ${LOG};
 sudo -A mkdir -p ${META_DIR}/var/logs; # > /dev/null;
 
 # .. #  SET UP STUFF THAT HAB PACKAGE OUGHT TO DO FOR ITSELF
@@ -409,17 +417,17 @@ sudo -A mkdir -p ${META_DIR}/var/logs; # > /dev/null;
 # .. # declare NGINX_CONF="${SVC_DIR}/nginx/config/nginx.conf";
 # declare NGINX_CONFIG_DIR="/hab/pkgs/${YOUR_ORG}/nginx/1.10.1/20161105150115/config";
 # declare NGINX_CONF="${NGINX_CONFIG_DIR}/nginx.conf";
-# echo -e "${PRETTY} Ensuring that Nginx bucket size can be set to 64 in '${NGINX_CONF}'." | tee -a ${LOG};
+# echo -e "${PRTY} Ensuring that Nginx bucket size can be set to 64 in '${NGINX_CONF}'." | tee -a ${LOG};
 
 # declare EXISTING_SETTING="keepalive_timeout";
 # declare MISSING_SETTING="server_names_hash_bucket_size";
 # declare REPLACEMENT="    ${MISSING_SETTING} 64;\n    ${EXISTING_SETTING} 60;";
 
-# echo -e "${PRETTY} Prepare incrond trigger for workaround ." | tee -a ${LOG};
+# echo -e "${PRTY} Prepare incrond trigger for workaround ." | tee -a ${LOG};
 
 # declare INCRON_D="/etc/incron.d";
 # declare INCRON_TRIGGER="${INCRON_D}/fixNginxVar";
-# declare NGINX_DIR="/hab/svc/nginx";
+declare NGINX_DIR="/etc/nginx";
 # declare NGINX_VAR_DIR="${NGINX_DIR}/var";
 declare HAB_USER_SCRIPTS_DIR="/home/hab/scripts";
 # declare NGINX_OWNERSHIP_FIXER="${HAB_USER_SCRIPTS_DIR}/postStartExec.sh";
@@ -463,12 +471,12 @@ sudo -A chown hab:hab ${HAB_USER_SCRIPTS_DIR};
 # sudo -A ls -l ${NGINX_CONFIG_DIR};
 
 
-echo -e "${PRETTY} Start up the '${SERVICE_UID}' systemd service . . ." | tee -a ${LOG};
+echo -e "${PRTY} Start up the '${SERVICE_UID}' systemd service . . ." | tee -a ${LOG};
 echo -e "                 sudo journalctl -n 200 -fb -u ${UNIT_FILE}  " | tee -a ${LOG};
 
 sudo -A systemctl start ${UNIT_FILE};
 
-echo -e "${PRETTY} Clean up APT dependencies . . ." | tee -a ${LOG};
+echo -e "${PRTY} Clean up APT dependencies . . ." | tee -a ${LOG};
 sudo apt-get -y update;
 sudo apt-get -y upgrade;
 sudo apt-get -y dist-upgrade;
@@ -536,7 +544,7 @@ waitForPostgres \
 declare PSQL="psql -h localhost -d template1";
 DBNAME=${PG_DB};
 DBOWNER=${PG_UID};
-echo -e "${PRETTY} Creating '${DBNAME}' PostgreSql database and owner '${DBOWNER}'" | tee -a ${LOG};
+echo -e "${PRTY} Creating '${DBNAME}' PostgreSql database and owner '${DBOWNER}'" | tee -a ${LOG};
 TST=$(${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${DBNAME}'");
 echo ${TEST} | grep ${DBNAME}  \
     ||  (
@@ -567,7 +575,6 @@ echo -e "
 
 
 
-
 declare NGINX_VHOST_PUBLIC_DIR="public";
 declare NGINX_VHOST_CONFIG="${NGINX_VHOSTS_DEFINITIONS}/${VIRTUAL_HOST_DOMAIN_NAME}";
 
@@ -587,7 +594,7 @@ declare METEOR_PUBLIC_DIRECTORY="/hab/svc/${YOUR_PKG}/var/programs/web.browser/a
 sudo -A mkdir -p ${NGINX_VHOST_ROOT_DIR};
 sudo -A mkdir -p ${METEOR_PUBLIC_DIRECTORY};
 echo -e "
-${PRETTY} Link Nginx static files directory to Habitat Meteor 'public' directory . . .
+${PRTY} Link Nginx static files directory to Habitat Meteor 'public' directory . . .
     - NGINX_STATIC_FILES_DIR -- ${NGINX_STATIC_FILES_DIR}
     - METEOR_PUBLIC_DIRECTORY -- ${METEOR_PUBLIC_DIRECTORY}
 " | tee -a ${LOG};
