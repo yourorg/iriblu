@@ -123,6 +123,8 @@ mkdir -p ../IriBluBuilt/.deploy;
 cp ./specs.sh ../IriBluBuilt/.deploy;
 cp -pr ./utils/. ../IriBluBuilt/.deploy;
 
+echo -e "${PRETTY} Ensuring we can 'expect' log in sequences ...";
+sudo -A apt install -y expect;
 
 pushd ../IriBluBuilt &>/dev/null;
 

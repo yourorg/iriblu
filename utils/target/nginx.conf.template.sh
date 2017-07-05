@@ -26,7 +26,7 @@ http {
     gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml;
     gzip_disable "MSIE [1-6]\.";
 
-    # ssl_password_file /home/hab/.ssh/hab_vault/global.pass;
+    # ssl_password_file /home/hab/.ssh/deploy_vault/global.pass;
 
     server {
         listen       80;

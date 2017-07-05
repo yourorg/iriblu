@@ -3,26 +3,26 @@
 function initialSecurityTasks() {
 #
   echo -e "APT install ufw and fail2ban";
-  sudo apt-get install -y ufw fail2ban;
+  sudo -A apt-get install -y ufw fail2ban;
   #
   echo -e "ufw settings";
-  sudo ufw default deny incoming;
-  sudo ufw default deny outgoing;
-  sudo ufw allow ssh;
-  sudo ufw allow git;
-  sudo ufw allow out http;
-  sudo ufw allow in http;
-  sudo ufw allow out https;
-  sudo ufw allow in https;
-  sudo ufw allow out 53;
+  sudo -A ufw default deny incoming;
+  sudo -A ufw default deny outgoing;
+  sudo -A ufw allow ssh;
+  sudo -A ufw allow git;
+  sudo -A ufw allow out http;
+  sudo -A ufw allow in http;
+  sudo -A ufw allow out https;
+  sudo -A ufw allow in https;
+  sudo -A ufw allow out 53;
   #
   echo -e "cycle firewall";
-  sudo ufw disable;
-  sudo ufw --force  enable;
+  sudo -A ufw disable;
+  sudo -A ufw --force  enable;
   #
   echo -e "cycle fail2ban";
-  sudo service fail2ban stop;
-  sudo service fail2ban start;
+  sudo -A service fail2ban stop;
+  sudo -A service fail2ban start;
   #
   echo -e "Complete : OK";
 
@@ -159,7 +159,7 @@ pushd ${SCRIPTPATH};
   apt-key list | grep ${PGRES_APT_KEY_HASH} &>/dev/null \
       && echo " Have postgresql client apt key." \
       || wget --quiet -O - https://www.postgresql.org/media/keys/${PGRES_APT_KEY_HASH}.asc \
-      | sudo apt-key add - >/dev/null;
+      | sudo -A apt-key add - >/dev/null;
 
   cat ${PGRES_APT} 2>/dev/null \
       |  grep ${UNIQ} >/dev/null \
@@ -198,6 +198,20 @@ pushd ${SCRIPTPATH};
   echo -e "${PRTY} Installing SQL database service.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-contrib;
 
+  echo -e "${PRTY} Installing NoSQL database service.  "  | tee -a ${LOG};
+  sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y mongodb-org;
+
+  export UNIT_FILE="mongodb.service";
+  echo -e "${PRTY} Creating systemd unit file '${UNIT_FILE}' for MongoDB" | tee -a ${LOG};
+  ${SCRIPTPATH}/${UNIT_FILE}.template.sh | sudo -A tee ${SCRIPTPATH}/${UNIT_FILE};
+  echo -e "${PRTY} Copying unit file to Systemd directory" | tee -a ${LOG};
+  sudo -A cp ${SCRIPTPATH}/${UNIT_FILE} /etc/systemd/system/ >> ${LOG};
+  echo -e "${PRTY} Enabling '${UNIT_FILE}'." | tee -a ${LOG};
+  sudo -A systemctl enable ${UNIT_FILE} >> ${LOG};
+  echo -e "${PRTY} Starting '${UNIT_FILE}'." | tee -a ${LOG};
+  sudo -A systemctl start ${UNIT_FILE} >> ${LOG};
+
+  echo -e "${PRTY} Looking for '${DEPLOY_USER}' user." | tee -a ${LOG};
   if ! id -u ${DEPLOY_USER} &>/dev/null; then
 
     echo -e "${PRTY} Creating user '${DEPLOY_USER}' . . .  " | tee -a ${LOG};
@@ -211,9 +225,9 @@ pushd ${SCRIPTPATH};
   echo -e "${PRTY} Setting password '${DEPLOY_USER_PWD}' for user '${DEPLOY_USER}' . . .  " | tee -a ${LOG};
   touch /dev/shm/tmppwd;
   chmod go-rwx /dev/shm/tmppwd;
-  cat << EOF > /dev/shm/tmppwd
-  ${DEPLOY_USER}:${DEPLOY_USER_PWD}
-  EOF
+cat << EOF > /dev/shm/tmppwd
+${DEPLOY_USER}:${DEPLOY_USER_PWD}
+EOF
   # ls -l /dev/shm/tmppwd;
   # cat /dev/shm/tmppwd;
   cat /dev/shm/tmppwd | sudo -A chpasswd;
@@ -223,7 +237,7 @@ pushd ${SCRIPTPATH};
   sudo -A chown -R ${DEPLOY_USER}:${DEPLOY_USER} ${DEPLOY_DIR};
 
   echo -e "${PRTY} Adding caller's credentials to authorized SSH keys of '${DEPLOY_USER}' . . .  " | tee -a ${LOG};
-  echo -e "${PRTY} -----------------------------------";
+  echo -e "${PRTY} -------------------------------------";
   echo -e "${PRTY} DEPLOY_DIR=${DEPLOY_DIR}";
   echo -e "${PRTY} DEPLOY_SSH_DIR=${DEPLOY_SSH_DIR}";
   echo -e "${PRTY} DEPLOY_USER_SSH_KEY_PUBL=${DEPLOY_USER_SSH_KEY_PUBL}";
@@ -243,9 +257,25 @@ pushd ${SCRIPTPATH};
   echo -e "${PRTY} Making '${PGPASSFILE}' for '${DEPLOY_USER}' user  ...";
   sudo -A touch ${PGPASSFILE};
   sudo -A chmod 666 ${PGPASSFILE};
-  echo "*:*:*:${DEPLOY_USER}:${PGRESQL_PWD}" > ${PGPASSFILE};
+  echo "*:*:*:${DEPLOY_USER}:${DEPLOY_USER_SSH_PASS_PHRASE}" > ${PGPASSFILE};
   sudo -A chmod 0600 ${PGPASSFILE};
   sudo -A chown ${DEPLOY_USER}:${DEPLOY_USER} ${PGPASSFILE};
+
+  sudo -A systemctl restart postgresql.service;
+  declare DEFAULTDB='template1';
+
+  echo -e "
+
+    sudo -Au postgres psql -tc \"SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'\" \
+        | grep -q 1 ||  sudo -Au postgres psql -d template1 -c \"CREATE USER ${DEPLOY_USER} WITH PASSWORD '${PG_PWD}' CREATEDB;\";
+    sudo -Au postgres psql -d template1 -c \"GRANT ALL PRIVILEGES ON DATABASE ${DEFAULTDB} to ${DEPLOY_USER};\";
+
+  wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+  ";
+
+  sudo -Au postgres psql -tc "SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'" \
+      | grep -q 1 ||  sudo -Au postgres psql -d template1 -tc "CREATE USER ${DEPLOY_USER} WITH PASSWORD '${DEPLOY_USER_SSH_PASS_PHRASE}' CREATEDB;";
+  sudo -Au postgres psql -d template1 -tc "GRANT ALL PRIVILEGES ON DATABASE ${DEFAULTDB} to ${DEPLOY_USER};";
 
 popd;
 
@@ -257,5 +287,5 @@ sudo -A chown -R ${DEPLOY_USER}:${DEPLOY_USER} ${DEPLOY_DIR}/${BUNDLE_DIRECTORY_
 sudo -A chmod go-rwx ${DEPLOY_DIR}/${BUNDLE_DIRECTORY_NAME};
 
 echo -e "${PRTY} Complete
-                    Quitting target RPC... :: $(date)";
+                   Quitting target RPC... :: $(date)";
 exit;

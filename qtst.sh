@@ -16,8 +16,14 @@ scp  utils/target/*.* ${DEPLOY_USER}@${TARGET_SRVR}:/home/${DEPLOY_USER}/Deploym
 #          ssh you@irid.blue ". .bash_login && ./DeploymentPkgInstallerScripts/PrepareChefHabitatTarget.sh" || errorUnexpectedRPCResult;
 
 echo -e "${PRTY} Going to work with...";
+echo -e "...............................";
+
+# echo -e "
+
+# ssh ${DEPLOY_USER}@${TARGET_SRVR} \". ~/.bash_login && ~/DeploymentPkgInstallerScripts/PrepareMeteorAppTargetServer.sh\";"
+# ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && ~/DeploymentPkgInstallerScripts/PrepareMeteorAppTargetServer.sh";
+
 echo -e "
 
 ssh ${DEPLOY_USER}@${TARGET_SRVR} \". ~/.bash_login && ~/DeploymentPkgInstallerScripts/DeploymentPackageRunner.sh\";"
-echo -e "...............................";
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && ~/DeploymentPkgInstallerScripts/DeploymentPackageRunner.sh";

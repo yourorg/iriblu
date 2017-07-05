@@ -26,7 +26,7 @@ fi;
 echo -e "${PRETTY} copy in 'mmks' ..."
 cp -r ../mmks .;
 
-read -n 1 -s -p "Press any key to continue";
+# read -n 1 -s -p "Press any key to continue";
 
 echo -e "${PRETTY} purge 'mmks' demo packages..."
 rm -fr mmks/.pkgs/mmks_*;
@@ -47,7 +47,7 @@ pushd mmks &>/dev/null;
     .scripts/preFlightCheck.sh;
   fi;
   echo -e "${PRETTY} install 'IriBlu' ...";
-  read -n 1 -s -p "Press any key to continue";
+  # read -n 1 -s -p "Press any key to continue";
 
   ./install_all.sh;
 

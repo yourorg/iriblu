@@ -11,7 +11,7 @@ function usage() {
         TARGET_SRVR is the host where the project will be installed.
         SETUP_USER_UID is a previously prepared 'sudoer' account on '\${TARGET_SRVR}'.
         SOURCE_SECRETS_DIR is the path of a directory of secrets for the '\${TARGET_SRVR}' server.
-            ( example : ${HOME}/.ssh/hab_vault/\${TARGET_SRVR} )
+            ( example : ${HOME}/.ssh/deploy_vault/\${TARGET_SRVR} )
         ENVIRONMENT is the path to a file of environment variables for '\${TARGET_SRVR}'
 
   ";
@@ -331,7 +331,7 @@ ssh ${SETUP_USER_UID}@${TARGET_SRVR} "source askPassMaker.sh; makeAskPassService
 
 
 echo -e "${PRTY} Installing Habitat on the target...";
-echo -e "ssh ${SETUP_USER_UID}@${TARGET_SRVR} \". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/PrepareMeteorAppTargetServer.sh\" || errorUnexpectedRPCResult;";
+echo -e "ssh ${SETUP_USER_UID}@${TARGET_SRVR} \". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/PrepareMeteorAppTargetServer.sh\";";
 
 ssh ${SETUP_USER_UID}@${TARGET_SRVR} ". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/PrepareMeteorAppTargetServer.sh" || errorUnexpectedRPCResult;
 
