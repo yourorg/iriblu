@@ -254,8 +254,8 @@ if [[ "X${MONGODB_PWD}X" = "XX" ]]; then errorNoSuitablePasswordInFile "null"; f
 
 # ----------------
 echo -e "${PRTY} Validating target host's PostgreSql user's password... ";
-if [[ "X${PGRESQL_PWD}X" = "XX" ]]; then errorNoSuitablePasswordInFile "null"; fi;
-[[ 0 -lt $(echo ${PGRESQL_PWD} | grep -cE "^.{${PASSWORD_MINIMUM_LENGTH},}$") ]] ||  errorNoSuitablePasswordInFile ${PGRESQL_PWD};
+if [[ "X${DB_PWD}X" = "XX" ]]; then errorNoSuitablePasswordInFile "null"; fi;
+[[ 0 -lt $(echo ${DB_PWD} | grep -cE "^.{${PASSWORD_MINIMUM_LENGTH},}$") ]] ||  errorNoSuitablePasswordInFile ${DB_PWD};
 
 
 echo -e "DEPLOY_USER_SSH_KEY_PUBL=${DEPLOY_USER_SSH_KEY_PUBL}";

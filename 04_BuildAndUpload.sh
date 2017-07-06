@@ -71,7 +71,6 @@ echo -e "${PRETTY}Tested sudo ASK_PASS for '${DEPLOY_USER}'@'${TARGET_SRVR}'.";
 
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && ~/DeploymentPkgInstallerScripts/DeploymentPackageRunner.sh";
 
-
 echo -e "||||||||||||||||||||||||||||||||||||||||||||||";
 exit;
 echo -e "      ** Done **

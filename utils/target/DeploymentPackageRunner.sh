@@ -191,17 +191,17 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
 
 
   # echo -e "${PRTY} Upserting super user pwd into core/postgresql '${POSTGRES_USER_TOML}' file." | tee -a ${LOG};
-  # export PG_PWD=$(cat ./settings.json | jq -r .PG_PWD);
+  # export DB_PWD=$(cat ./settings.json | jq -r .DB_PWD);
   echo -e "
 
 
-                       ${PG_PWD}
+                       ${DB_PWD}
 
 
   ";
   # declare EXISTING_SETTING="initdb_superuser_password";
 
-  # declare REPLACEMENT="${EXISTING_SETTING} = \"${PG_PWD}\"";
+  # declare REPLACEMENT="${EXISTING_SETTING} = \"${DB_PWD}\"";
   # grep "${EXISTING_SETTING}" ${POSTGRES_USER_TOML} >/dev/null \
   #          && sudo -A sed -i "s|.*${EXISTING_SETTING}.*|${REPLACEMENT}|" ${POSTGRES_USER_TOML} \
   #          || echo ${REPLACEMENT} > ${POSTGRES_USER_TOML};
@@ -484,51 +484,29 @@ sudo apt-get -y autoremove;
 
 
 
+declare DEFAULTDB='template1';
 
-
-declare DBNAME='template1';
-declare SANITY_CHECK="SELECT datname FROM pg_database where datname='${DBNAME}'";
-declare PSQL="psql -w -h localhost -d ${DBNAME}";
+declare SANITY_CHECK="SELECT datname FROM pg_database where datname='${DEFAULTDB}'";
+declare PSQL="psql -w -h localhost -d ${DEFAULTDB}";
 
 echo -e "
 ##########################################
-
-PGPASSFILE = ${PGPASSFILE};
-
 function testPostgresState() {
   ${PSQL} -tc \"${SANITY_CHECK}\" 2>/dev/null \
-     | grep ${DBNAME} &>/dev/null;
+     | grep ${DEFAULTDB} &>/dev/null;
 }
-
-###########################################>>>>
+###########################################>>>
 ";
 
 function testPostgresState() {
-  ${PSQL} -tc "${SANITY_CHECK}" | grep ${DBNAME};
+  ${PSQL} -tc "${SANITY_CHECK}" | grep ${DEFAULTDB} >/dev/null;
 }
-
-
-# function testPostgresState() {
-#   psql -h localhost -d ${DBNAME} -tc "${SANITY_CHECK}" 2>/dev/null \
-#      | grep ${DBNAME} &>/dev/null;
-# }
-
-
-# function testPostgresState() {
-#   echo -e "
-#                          Retry
-#   ";
-#   psql -h localhost -d ${DBNAME} \
-#      -tc "SELECT datname FROM pg_database where datname='${DBNAME}'"  \
-#      | grep ${DBNAME} ;
-# }
 
 declare SLEEP=2;
 declare REPEAT=60;
 export DELAY=$(( SLEEP * REPEAT ));
 function waitForPostgres() {
 
-  # testPostgresState && echo 77 || echo 44;
   local CNT=${DELAY};
   until testPostgresState || (( CNT-- < 1 ))
   do
@@ -537,7 +515,7 @@ function waitForPostgres() {
     sleep ${SLEEP};
   done;
   # echo -e "Sanity check was :\n  ${SANITY_CHECK}";
-  # psql -h localhost -d ${DBNAME} -tc "${SANITY_CHECK}";
+  # psql -h localhost -d ${DEFAULTDB} -tc "${SANITY_CHECK}";
   echo -e "
 
   Stopped waiting with : ${CNT}";
@@ -545,25 +523,60 @@ function waitForPostgres() {
   (( CNT > 0 ))
 
 }
+
 waitForPostgres \
    && echo -e "\nPostgres is responding now!" \
    || ( echo -e "\nPostgres failed to respond after ${DELAY} seconds."; exit 1; );
 
+declare PSQL_DEP="psql -w -U ${DEPLOY_USER} -h localhost -d ${DEFAULTDB}";
+declare PSQL_APP="psql -w -U ${DB_OWNER} -h localhost -d ${DB_NAME}";
 
-
-DBNAME=${PG_DB};
-DBOWNER=${PG_UID};
-echo -e "${PRTY} Creating '${DBNAME}' PostgreSql database and owner '${DBOWNER}'" | tee -a ${LOG};
-TEST=$(${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${DBNAME}'");
-echo ${TEST} | grep ${DBNAME}  \
-    ||  (
-          ${PSQL} -tc "CREATE USER ${DBOWNER} PASSWORD '${PG_PWD}'" &&
-          ${PSQL} -tc "CREATE DATABASE ${DBNAME} WITH OWNER ${DBOWNER}";
-        )  \
+declare NO_SUCH_DATABASE=$(${PSQL_DEP} -tc "SELECT datname FROM pg_database WHERE datname='${DB_NAME}'");
+if [[ -z ${NO_SUCH_DATABASE} ]]; then
+  echo -e "${PRTY} Creating '${DB_NAME}' PostgreSql database and owner '${DB_ROLE}'" | tee -a ${LOG};
+echo "A5";
+(
+        ${PSQL_DEP} -tc "CREATE ROLE ${DB_OWNER} PASSWORD '${DB_PWD}' LOGIN;" &&
+        ${PSQL_DEP} -tc "GRANT ${DB_ROLE} to ${DB_OWNER};" &&
+        ${PSQL_DEP} -tc "CREATE DATABASE ${DB_NAME} WITH OWNER ${DB_ROLE};";        )  \
         || ( echo -e "
-           *** Failed to create database '${DBNAME}' ***
+           *** Failed to create database '${DB_NAME}' ***
            ***   Giving up                           *** ";
            exit 1;);
+else
+  echo -e "${PRTY} Database '${DB_NAME}' already exists." | tee -a ${LOG};
+fi;
+
+declare PGPASSFILE=${HOME}/.pgpass;
+sed -i "/${DB_OWNER}/d" ${PGPASSFILE}; echo "*:*:*:${DB_OWNER}:${DB_PWD}" >> ${PGPASSFILE};
+cat ${PGPASSFILE};
+
+echo -e "${PSQL_APP} -tc \"CREATE TABLE cities ( name varchar(80), location point);\";";
+${PSQL_APP} -tc "CREATE TABLE cities ( name varchar(80), location point);";
+
+# DB_NAME=${PG_DB};
+# DB_OWNER=${PG_UID};
+# echo -e "${PRTY} Creating '${DB_NAME}' PostgreSql database and owner '${DB_OWNER}'" | tee -a ${LOG};
+# ${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${DB_NAME}'";
+# echo "--";
+# TEST=$(${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${DB_NAME}'");
+# echo ${TEST} | grep ${DB_NAME}  \
+#     ||  (
+#           ${PSQL} -tc "CREATE USER ${DB_OWNER} PASSWORD '${DB_PWD}'" &&
+#           ${PSQL} -tc "CREATE DATABASE ${DB_NAME} WITH OWNER ${DB_OWNER}";
+#         )  \
+#         || ( echo -e "
+#            *** Failed to create database '${DB_NAME}' ***
+#            ***   Giving up                           *** ";
+#            exit 1;);
+
+
+echo -e "
+$(pwd)
+
+/|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\";
+
+exit;
 
 declare SERVER_INITIALIZER=${SCRIPTPATH}/initialize_server.sh;
 echo -e "
@@ -630,13 +643,6 @@ pushd ${NGINX_VHOST_ROOT_DIR} >/dev/null;
   ls -l;
 popd >/dev/null;
 
-
-echo -e "
-$(pwd)
-
-/|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\";
-
-exit;
 
 echo -e "
 

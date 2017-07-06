@@ -87,7 +87,7 @@ pushd ${SCRIPTPATH};
   source ${INSTALL_SECRETS};
 
   echo -e "${PRTY} MONGODB_PWD=${MONGODB_PWD}";
-  echo -e "${PRTY} PGRESQL_PWD=${PGRESQL_PWD}";
+  echo -e "${PRTY} DB_PWD=${DB_PWD}";
   echo -e "${PRTY} SETUP_USER_PWD=${SETUP_USER_PWD}";
   echo -e "${PRTY} DEPLOY_USER_PWD=${DEPLOY_USER_PWD}";
   # echo -e "${PRTY} DEPLOY_USER_SSH_KEY_FILE=${DEPLOY_USER_SSH_KEY_FILE}";
@@ -263,19 +263,54 @@ EOF
 
   sudo -A systemctl restart postgresql.service;
   declare DEFAULTDB='template1';
-
   echo -e "
 
-    sudo -Au postgres psql -tc \"SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'\" \
-        | grep -q 1 ||  sudo -Au postgres psql -d template1 -c \"CREATE USER ${DEPLOY_USER} WITH PASSWORD '${PG_PWD}' CREATEDB;\";
-    sudo -Au postgres psql -d template1 -c \"GRANT ALL PRIVILEGES ON DATABASE ${DEFAULTDB} to ${DEPLOY_USER};\";
+      declare NO_SUCH_USER=\$(sudo -Au postgres psql -tc \"SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'\");
+      if [[ -z \${NO_SUCH_USER} ]]; then
+        echo -e \"Creating role '${DB_ROLE}'.\" ;
+        sudo -Au postgres psql -d template1 \
+            -tc \"CREATE ROLE ${DB_ROLE} CREATEDB CREATEROLE;\";
+        echo -e \"Creating user '${DEPLOY_USER}'.\" ;
+        sudo -Au postgres psql -d template1 \
+            -tc \"CREATE USER ${DEPLOY_USER} WITH PASSWORD '${DEPLOY_USER_SSH_PASS_PHRASE}' CREATEDB CREATEROLE;\";
+      else
+        echo -e \"User '${DEPLOY_USER}' already exists.\" ;
+      fi;
+      sudo -Au postgres psql -d template1 -tc \"GRANT ALL PRIVILEGES ON DATABASE ${DEFAULTDB} to ${DEPLOY_USER};\";
+      sudo -Au postgres psql -d template1 -tc \"GRANT ${DB_ROLE} to ${DEPLOY_USER};\";
 
-  wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+  wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
   ";
 
-  sudo -Au postgres psql -tc "SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'" \
-      | grep -q 1 ||  sudo -Au postgres psql -d template1 -tc "CREATE USER ${DEPLOY_USER} WITH PASSWORD '${DEPLOY_USER_SSH_PASS_PHRASE}' CREATEDB;";
+  declare NO_SUCH_USER=$(sudo -Au postgres psql -tc "SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'");
+  if [[ -z ${NO_SUCH_USER} ]]; then
+    echo -e "Creating role '${DB_ROLE}'." ;
+    sudo -Au postgres psql -d template1 \
+        -tc "CREATE ROLE ${DB_ROLE} CREATEDB CREATEROLE;";
+    echo -e "Creating user '${DEPLOY_USER}'." ;
+    sudo -Au postgres psql -d template1 \
+        -tc "CREATE USER ${DEPLOY_USER} WITH PASSWORD '${DEPLOY_USER_SSH_PASS_PHRASE}' CREATEDB CREATEROLE;";
+  else
+    echo -e "User '${DEPLOY_USER}' already exists." ;
+  fi;
+
   sudo -Au postgres psql -d template1 -tc "GRANT ALL PRIVILEGES ON DATABASE ${DEFAULTDB} to ${DEPLOY_USER};";
+
+  sudo -Au postgres psql -d template1 -tc "GRANT ${DB_ROLE} to ${DEPLOY_USER};";
+
+  # declare NO_SUCH_USER=$(sudo -Au postgres psql -tc "SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'");
+  # if [[ -z NO_SUCH_USER ]]; then
+  #   echo -e "Creating role '${DBNAME}'." ;
+  #   sudo -Au postgres psql -d template1 \
+  #       -tc "CREATE ROLE ${DBNAME} CREATEDB CREATEROLE;";
+  #   echo -e "Creating user '${DEPLOY_USER}'." ;
+  #   sudo -Au postgres psql -d template1 \
+  #       -tc "CREATE USER ${DEPLOY_USER} WITH PASSWORD '${DEPLOY_USER_SSH_PASS_PHRASE}';";
+  # else
+  #   echo -e "User '${DEPLOY_USER}' already exists." ;
+  # fi;
+  # sudo -Au postgres psql -d template1 -tc "GRANT ALL PRIVILEGES ON DATABASE ${DEFAULTDB} to ${DEPLOY_USER};";
+  # sudo -Au postgres psql -d template1 -tc "GRANT ROLE ${DBNAME} to ${DEPLOY_USER};";
 
 popd;
 
