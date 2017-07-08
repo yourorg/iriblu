@@ -146,7 +146,6 @@ echo "TARGET_SECRETS_FILE=${TARGET_SECRETS_FILE}";
 
 if [[ "X${VIRTUAL_HOST_DOMAIN_NAME}X" = "XX" ]]; then usage "VIRTUAL_HOST_DOMAIN_NAME=${VIRTUAL_HOST_DOMAIN_NAME}"; fi;
 
-
 echo -e "${PRTY} Testing secrets file availability... [   ls \"${TARGET_SECRETS_FILE}\"  ]";
 if [ ! -f "${TARGET_SECRETS_FILE}" ]; then errorNoSecretsFileSpecified "${TARGET_SECRETS_FILE}"; fi;
 source ${TARGET_SECRETS_FILE};
@@ -191,17 +190,17 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
 
 
   # echo -e "${PRTY} Upserting super user pwd into core/postgresql '${POSTGRES_USER_TOML}' file." | tee -a ${LOG};
-  # export DB_PWD=$(cat ./settings.json | jq -r .DB_PWD);
+  # export RDBMS_PWD=$(cat ./settings.json | jq -r .RDBMS_PWD);
   echo -e "
 
 
-                       ${DB_PWD}
+                       ${RDBMS_PWD}
 
 
   ";
   # declare EXISTING_SETTING="initdb_superuser_password";
 
-  # declare REPLACEMENT="${EXISTING_SETTING} = \"${DB_PWD}\"";
+  # declare REPLACEMENT="${EXISTING_SETTING} = \"${RDBMS_PWD}\"";
   # grep "${EXISTING_SETTING}" ${POSTGRES_USER_TOML} >/dev/null \
   #          && sudo -A sed -i "s|.*${EXISTING_SETTING}.*|${REPLACEMENT}|" ${POSTGRES_USER_TOML} \
   #          || echo ${REPLACEMENT} > ${POSTGRES_USER_TOML};
@@ -276,16 +275,14 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
   echo -e "${PRTY} Creating mongo admin user" | tee -a ${LOG};
 mongo >> ${LOG} <<EOFA
   use admin
-  db.createUser({user: "admin",pwd:"password",roles:[{role:"root",db:"admin"}]})
+  db.createUser({user: "admin",pwd:"${NOSQLDB_ADMIN_PWD}",roles:[{role:"root",db:"admin"}]})
 EOFA
 
-  echo -e "${PRTY} Creating '${VIRTUAL_HOST_DOMAIN_NAME}' db and owner 'meteor'" | tee -a ${LOG};
-mongo -u admin -p password admin >> ${LOG} <<EOFM
-  use ${VIRTUAL_HOST_DOMAIN_NAME}
-  db.createUser({user: "meteor",pwd:"${MONGODB_PWD}",roles:[{role:"dbOwner",db:"${VIRTUAL_HOST_DOMAIN_NAME}"},"readWrite"]})
+  echo -e "${PRTY} Creating '${VIRTUAL_HOST_DOMAIN_NAME}' db and owner '${NOSQLDB_UID}'" | tee -a ${LOG};
+mongo -u admin -p password ${NOSQLDB_ADMIN_PWD} >> ${LOG} <<EOFM
+  use ${NOSQLDB_DB}
+  db.createUser({user: "${NOSQLDB_UID}",pwd:"${NOSQLDB_PWD}",roles:[{role:"dbOwner",db:"${NOSQLDB_DB}"},"readWrite"]})
 EOFM
-
-
 
 
 # echo -e "${PRTY} Ensuring package '${PACKAGE_PATH}' is available" | tee -a ${LOG};
@@ -529,65 +526,56 @@ waitForPostgres \
    || ( echo -e "\nPostgres failed to respond after ${DELAY} seconds."; exit 1; );
 
 declare PSQL_DEP="psql -w -U ${DEPLOY_USER} -h localhost -d ${DEFAULTDB}";
-declare PSQL_APP="psql -w -U ${DB_OWNER} -h localhost -d ${DB_NAME}";
+declare PSQL_APP="psql -w -U ${RDBMS_OWNER} -h localhost -d ${RDBMS_DB}";
 
-declare NO_SUCH_DATABASE=$(${PSQL_DEP} -tc "SELECT datname FROM pg_database WHERE datname='${DB_NAME}'");
+declare NO_SUCH_DATABASE=$(${PSQL_DEP} -tc "SELECT datname FROM pg_database WHERE datname='${RDBMS_DB}'");
 if [[ -z ${NO_SUCH_DATABASE} ]]; then
-  echo -e "${PRTY} Creating '${DB_NAME}' PostgreSql database and owner '${DB_ROLE}'" | tee -a ${LOG};
-echo "A5";
+  echo -e "${PRTY} Creating '${RDBMS_DB}' PostgreSql database and owner '${RDBMS_ROLE}'" | tee -a ${LOG};
 (
-        ${PSQL_DEP} -tc "CREATE ROLE ${DB_OWNER} PASSWORD '${DB_PWD}' LOGIN;" &&
-        ${PSQL_DEP} -tc "GRANT ${DB_ROLE} to ${DB_OWNER};" &&
-        ${PSQL_DEP} -tc "CREATE DATABASE ${DB_NAME} WITH OWNER ${DB_ROLE};";        )  \
+        ${PSQL_DEP} -tc "CREATE ROLE ${RDBMS_OWNER} PASSWORD '${RDBMS_PWD}' LOGIN;" &&
+        ${PSQL_DEP} -tc "GRANT ${RDBMS_ROLE} to ${RDBMS_OWNER};" &&
+        ${PSQL_DEP} -tc "CREATE DATABASE ${RDBMS_DB} WITH OWNER ${RDBMS_ROLE};";        )  \
         || ( echo -e "
-           *** Failed to create database '${DB_NAME}' ***
+           *** Failed to create database '${RDBMS_DB}' ***
            ***   Giving up                           *** ";
            exit 1;);
 else
-  echo -e "${PRTY} Database '${DB_NAME}' already exists." | tee -a ${LOG};
+  echo -e "${PRTY} Database '${RDBMS_DB}' already exists." | tee -a ${LOG};
 fi;
 
 declare PGPASSFILE=${HOME}/.pgpass;
-sed -i "/${DB_OWNER}/d" ${PGPASSFILE}; echo "*:*:*:${DB_OWNER}:${DB_PWD}" >> ${PGPASSFILE};
+sed -i "/${RDBMS_OWNER}/d" ${PGPASSFILE}; echo "*:*:*:${RDBMS_OWNER}:${RDBMS_PWD}" >> ${PGPASSFILE};
 cat ${PGPASSFILE};
 
 echo -e "${PSQL_APP} -tc \"CREATE TABLE cities ( name varchar(80), location point);\";";
 ${PSQL_APP} -tc "CREATE TABLE cities ( name varchar(80), location point);";
+${PSQL_APP} -tc "DROP TABLE cities;";
 
-# DB_NAME=${PG_DB};
-# DB_OWNER=${PG_UID};
-# echo -e "${PRTY} Creating '${DB_NAME}' PostgreSql database and owner '${DB_OWNER}'" | tee -a ${LOG};
-# ${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${DB_NAME}'";
+# RDBMS_DB=${PG_DB};
+# RDBMS_OWNER=${PG_UID};
+# echo -e "${PRTY} Creating '${RDBMS_DB}' PostgreSql database and owner '${RDBMS_OWNER}'" | tee -a ${LOG};
+# ${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${RDBMS_DB}'";
 # echo "--";
-# TEST=$(${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${DB_NAME}'");
-# echo ${TEST} | grep ${DB_NAME}  \
+# TEST=$(${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${RDBMS_DB}'");
+# echo ${TEST} | grep ${RDBMS_DB}  \
 #     ||  (
-#           ${PSQL} -tc "CREATE USER ${DB_OWNER} PASSWORD '${DB_PWD}'" &&
-#           ${PSQL} -tc "CREATE DATABASE ${DB_NAME} WITH OWNER ${DB_OWNER}";
+#           ${PSQL} -tc "CREATE USER ${RDBMS_OWNER} PASSWORD '${RDBMS_PWD}'" &&
+#           ${PSQL} -tc "CREATE DATABASE ${RDBMS_DB} WITH OWNER ${RDBMS_OWNER}";
 #         )  \
 #         || ( echo -e "
-#            *** Failed to create database '${DB_NAME}' ***
+#            *** Failed to create database '${RDBMS_DB}' ***
 #            ***   Giving up                           *** ";
 #            exit 1;);
 
-
-echo -e "
-$(pwd)
-
-/|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\ /|\\";
-
-exit;
-
 declare SERVER_INITIALIZER=${SCRIPTPATH}/initialize_server.sh;
-echo -e "
-  ºººººº  Ready to restore backup ${PG_BKP} ºººººº
-    using script : ${SERVER_INITIALIZER}
-";
+echo -e "${PRTY} Ready to restore backup ${RDBMS_BKP}  using script : ${SERVER_INITIALIZER}";
 if [ -f ${SERVER_INITIALIZER} ]; then
+  echo -e "${PRTY} Restoring ...";
   chmod ug+x ${SERVER_INITIALIZER};
   ${SERVER_INITIALIZER};
+else
+  echo -e "${PRTY} No backup to restore ...";
 fi;
-
 
 
 declare NGINX_VHOST_PUBLIC_DIR="public";
@@ -602,30 +590,33 @@ declare NGINX_VHOST_CONFIG="${NGINX_VHOSTS_PUBLICATIONS}/${VIRTUAL_HOST_DOMAIN_N
 declare NGINX_VHOST_ROOT_DIR=$(cat ${NGINX_VHOST_CONFIG} \
      | sed -n -e "/${NGINX_VHOST_PUBLIC_DIR}/,/}/ p" \
      | grep root | tr -d '[:space:]');
+echo -e "${PRTY} NGINX_VHOST_CONFIG = ${NGINX_VHOST_CONFIG}";
 NGINX_VHOST_ROOT_DIR="${NGINX_VHOST_ROOT_DIR#root}";
 NGINX_VHOST_ROOT_DIR="${NGINX_VHOST_ROOT_DIR%\;}";
 
 
-echo -e " - NGINX_VHOST_ROOT_DIR -- ${NGINX_VHOST_ROOT_DIR}";
+echo -e "${PRTY}  - NGINX_VHOST_ROOT_DIR -- ${NGINX_VHOST_ROOT_DIR}";
 declare NGINX_STATIC_FILES_DIR=${NGINX_VHOST_ROOT_DIR}/public;
 
 declare DEFAULT_METEOR_BUNDLE="${HOME}/MeteorApp/0.0.0";
 declare DEFAULT_METEOR_PUBLIC_DIRECTORY="${DEFAULT_METEOR_BUNDLE}/programs/web.browser/app";
-echo "dummy" > ${DEFAULT_METEOR_PUBLIC_DIRECTORY}/app.apk;
+declare ANDROID_PACKAGE="app.apk";
+
+echo "dummy" > ${DEFAULT_METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE};
 
 declare LATEST_METEOR_BUNDLE="${HOME}/MeteorApp/LATEST";
-declare METEOR_PUBLIC_DIRECTORY="${LATEST_METEOR_BUNDLE}/programs/web.browser/app/";
+declare METEOR_PUBLIC_DIRECTORY="${LATEST_METEOR_BUNDLE}/programs/web.browser/app";
 
 mkdir -p ${DEFAULT_METEOR_PUBLIC_DIRECTORY};
 if [[ ! -L  ${LATEST_METEOR_BUNDLE} ]];  then
   ln -s ${DEFAULT_METEOR_BUNDLE} ${LATEST_METEOR_BUNDLE};
 fi;
 
-echo -e "
+# echo -e "
 
-______________________________________________________________________";
-echo -e "cat ${METEOR_PUBLIC_DIRECTORY}/app.apk";
-cat ${METEOR_PUBLIC_DIRECTORY}/app.apk;
+# ______________________________________________________________________";
+# echo -e "cat ${METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE}";
+# cat ${METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE};
 
 sudo -A mkdir -p ${NGINX_VHOST_ROOT_DIR};
 
@@ -638,8 +629,9 @@ ${PRTY} Link Nginx static files directory to Habitat Meteor 'public' directory .
 
 
 pushd ${NGINX_VHOST_ROOT_DIR} >/dev/null;
-  pwd ;
-  echo -e "sudo -A ln -s ${METEOR_PUBLIC_DIRECTORY} ${NGINX_VHOST_PUBLIC_DIR};";
+#  echo -e "sudo -A ln -s ${METEOR_PUBLIC_DIRECTORY} ${NGINX_VHOST_PUBLIC_DIR};";
+  sudo -A rm -fr ${NGINX_VHOST_PUBLIC_DIR};
+  sudo -A ln -s ${METEOR_PUBLIC_DIRECTORY} ${NGINX_VHOST_PUBLIC_DIR};
   ls -l;
 popd >/dev/null;
 
@@ -649,7 +641,7 @@ echo -e "
 ______________________________________________________________________";
 
 
-sudo -A ls -l ${META_DIR}/var/logs;
+# sudo -A ls -l ${META_DIR}/var/logs;
 # sudo -A ls -l ${META_DIR}/data/index.html;
 
 echo -e "";

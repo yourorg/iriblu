@@ -15,7 +15,13 @@ function initialSecurityTasks() {
   sudo -A ufw allow out https;
   sudo -A ufw allow in https;
   sudo -A ufw allow out 53;
-  #
+
+  echo -e "ufw for Postgres on VPN";
+  sudo -A ufw allow from 192.168.122.0/24 to any port 5432;
+
+  echo -e "ufw for MongoDB on VPN";
+  sudo -A ufw allow in 27017;
+
   echo -e "cycle firewall";
   sudo -A ufw disable;
   sudo -A ufw --force  enable;
@@ -86,8 +92,8 @@ pushd ${SCRIPTPATH};
   echo -e "${PRTY} VHOST_SECRETS=${VHOST_SECRETS}";
   source ${INSTALL_SECRETS};
 
-  echo -e "${PRTY} MONGODB_PWD=${MONGODB_PWD}";
-  echo -e "${PRTY} DB_PWD=${DB_PWD}";
+  echo -e "${PRTY} NOSQLDB_PWD=${NOSQLDB_PWD}";
+  echo -e "${PRTY} RDBMS_PWD=${RDBMS_PWD}";
   echo -e "${PRTY} SETUP_USER_PWD=${SETUP_USER_PWD}";
   echo -e "${PRTY} DEPLOY_USER_PWD=${DEPLOY_USER_PWD}";
   # echo -e "${PRTY} DEPLOY_USER_SSH_KEY_FILE=${DEPLOY_USER_SSH_KEY_FILE}";
@@ -189,6 +195,9 @@ pushd ${SCRIPTPATH};
   echo -e "${PRTY} Ensuring able to install SSL certs.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y certbot;
 
+  echo -e "${PRTY} Ensuring able to build native NPM packages.  "  | tee -a ${LOG};
+  sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential;
+
   echo -e "${PRTY} Ensuring able to react to changes in directories and files.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y inotify-tools;
 
@@ -197,9 +206,16 @@ pushd ${SCRIPTPATH};
 
   echo -e "${PRTY} Installing SQL database service.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-contrib;
+  sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y python-psycopg2;
+  sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y libpq-dev;
 
   echo -e "${PRTY} Installing NoSQL database service.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y mongodb-org;
+
+pwd;
+ls -l ${HOME}/DeploymentPkgInstallerScripts/mongod.conf;
+
+  sudo -A cp ${HOME}/DeploymentPkgInstallerScripts/mongod.conf /etc;
 
   export UNIT_FILE="mongodb.service";
   echo -e "${PRTY} Creating systemd unit file '${UNIT_FILE}' for MongoDB" | tee -a ${LOG};
@@ -210,6 +226,10 @@ pushd ${SCRIPTPATH};
   sudo -A systemctl enable ${UNIT_FILE} >> ${LOG};
   echo -e "${PRTY} Starting '${UNIT_FILE}'." | tee -a ${LOG};
   sudo -A systemctl start ${UNIT_FILE} >> ${LOG};
+
+
+echo -e "|||||||||||||| C U R T A I L E D |||||||||||||||||||||";
+exit;
 
   echo -e "${PRTY} Looking for '${DEPLOY_USER}' user." | tee -a ${LOG};
   if ! id -u ${DEPLOY_USER} &>/dev/null; then
@@ -261,15 +281,20 @@ EOF
   sudo -A chmod 0600 ${PGPASSFILE};
   sudo -A chown ${DEPLOY_USER}:${DEPLOY_USER} ${PGPASSFILE};
 
+  PG_USER="postgres";
+  sudo -A cp -r postgresql /etc;
+  sudo -A chmod -R o-rwx /etc/postgresql;
+  sudo -A chown -R ${PG_USER}:${PG_USER} /etc/postgresql;
+
   sudo -A systemctl restart postgresql.service;
   declare DEFAULTDB='template1';
   echo -e "
 
       declare NO_SUCH_USER=\$(sudo -Au postgres psql -tc \"SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'\");
       if [[ -z \${NO_SUCH_USER} ]]; then
-        echo -e \"Creating role '${DB_ROLE}'.\" ;
+        echo -e \"Creating role '${RDBMS_ROLE}'.\" ;
         sudo -Au postgres psql -d template1 \
-            -tc \"CREATE ROLE ${DB_ROLE} CREATEDB CREATEROLE;\";
+            -tc \"CREATE ROLE ${RDBMS_ROLE} CREATEDB CREATEROLE;\";
         echo -e \"Creating user '${DEPLOY_USER}'.\" ;
         sudo -Au postgres psql -d template1 \
             -tc \"CREATE USER ${DEPLOY_USER} WITH PASSWORD '${DEPLOY_USER_SSH_PASS_PHRASE}' CREATEDB CREATEROLE;\";
@@ -277,16 +302,16 @@ EOF
         echo -e \"User '${DEPLOY_USER}' already exists.\" ;
       fi;
       sudo -Au postgres psql -d template1 -tc \"GRANT ALL PRIVILEGES ON DATABASE ${DEFAULTDB} to ${DEPLOY_USER};\";
-      sudo -Au postgres psql -d template1 -tc \"GRANT ${DB_ROLE} to ${DEPLOY_USER};\";
+      sudo -Au postgres psql -d template1 -tc \"GRANT ${RDBMS_ROLE} to ${DEPLOY_USER};\";
 
   wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
   ";
 
   declare NO_SUCH_USER=$(sudo -Au postgres psql -tc "SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'");
   if [[ -z ${NO_SUCH_USER} ]]; then
-    echo -e "Creating role '${DB_ROLE}'." ;
+    echo -e "Creating role '${RDBMS_ROLE}'." ;
     sudo -Au postgres psql -d template1 \
-        -tc "CREATE ROLE ${DB_ROLE} CREATEDB CREATEROLE;";
+        -tc "CREATE ROLE ${RDBMS_ROLE} CREATEDB CREATEROLE;";
     echo -e "Creating user '${DEPLOY_USER}'." ;
     sudo -Au postgres psql -d template1 \
         -tc "CREATE USER ${DEPLOY_USER} WITH PASSWORD '${DEPLOY_USER_SSH_PASS_PHRASE}' CREATEDB CREATEROLE;";
@@ -296,7 +321,7 @@ EOF
 
   sudo -Au postgres psql -d template1 -tc "GRANT ALL PRIVILEGES ON DATABASE ${DEFAULTDB} to ${DEPLOY_USER};";
 
-  sudo -Au postgres psql -d template1 -tc "GRANT ${DB_ROLE} to ${DEPLOY_USER};";
+  sudo -Au postgres psql -d template1 -tc "GRANT ${RDBMS_ROLE} to ${DEPLOY_USER};";
 
   # declare NO_SUCH_USER=$(sudo -Au postgres psql -tc "SELECT 1 FROM pg_user WHERE usename = '${DEPLOY_USER}'");
   # if [[ -z NO_SUCH_USER ]]; then

@@ -29,11 +29,12 @@ function TestRun() {
     pwd;
     npm knex --version;
 
-    meteor reset;
-    nohup .scripts/startInDevMode.sh &
-
     echo -e "${PRETTY} linting and unit tests ...";
     meteor npm test;
+
+    echo -e "${PRETTY} Starting app in background ...";
+    meteor reset;
+    nohup .scripts/startInDevMode.sh &
 
     if [[ -z ${DISPLAY} ]]; then
       echo -e "${PRETTY} No GUI found for browser display.

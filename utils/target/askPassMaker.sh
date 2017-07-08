@@ -20,6 +20,7 @@ function makeAskPassService() {
   #
   echo -e "${PTRNB}
 export SUDO_ASKPASS=\"${SUPWD}\";
+. ${HOME}/.profile;
 ${PTRNE}
 " >> ${BL_PATH}
   #

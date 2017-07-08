@@ -228,7 +228,6 @@ ssh-add -l | grep -c ${KEYPAIR} >/dev/null || ssh-add ${KEYPAIR};
 # EOF
 echo -e "${PRTY} Added keys to ssh-agent";
 
-
 # echo -e "${PRTY} SETUP_USER_PWD=${SETUP_USER_PWD}";
 # echo -e "${PRTY} DEPLOY_USER_PWD=${DEPLOY_USER_PWD}";
 echo -e "${PRTY} DEPLOY_USER_SSH_KEY_PUBL=${DEPLOY_USER_SSH_KEY_PUBL}";
@@ -248,14 +247,14 @@ if [[ "X${DEPLOY_USER_PWD}X" = "XX" ]]; then errorNoSuitablePasswordInFile "null
 
 # ----------------
 echo -e "${PRTY} Validating target host's MongoDB user's password... ";
-if [[ "X${MONGODB_PWD}X" = "XX" ]]; then errorNoSuitablePasswordInFile "null"; fi;
-[[ 0 -lt $(echo ${MONGODB_PWD} | grep -cE "^.{${PASSWORD_MINIMUM_LENGTH},}$") ]] ||  errorNoSuitablePasswordInFile ${MONGODB_PWD};
+if [[ "X${NOSQLDB_PWD}X" = "XX" ]]; then errorNoSuitablePasswordInFile "null"; fi;
+[[ 0 -lt $(echo ${NOSQLDB_PWD} | grep -cE "^.{${PASSWORD_MINIMUM_LENGTH},}$") ]] ||  errorNoSuitablePasswordInFile ${NOSQLDB_PWD};
 
 
 # ----------------
 echo -e "${PRTY} Validating target host's PostgreSql user's password... ";
-if [[ "X${DB_PWD}X" = "XX" ]]; then errorNoSuitablePasswordInFile "null"; fi;
-[[ 0 -lt $(echo ${DB_PWD} | grep -cE "^.{${PASSWORD_MINIMUM_LENGTH},}$") ]] ||  errorNoSuitablePasswordInFile ${DB_PWD};
+if [[ "X${RDBMS_PWD}X" = "XX" ]]; then errorNoSuitablePasswordInFile "null"; fi;
+[[ 0 -lt $(echo ${RDBMS_PWD} | grep -cE "^.{${PASSWORD_MINIMUM_LENGTH},}$") ]] ||  errorNoSuitablePasswordInFile ${RDBMS_PWD};
 
 
 echo -e "DEPLOY_USER_SSH_KEY_PUBL=${DEPLOY_USER_SSH_KEY_PUBL}";
@@ -287,7 +286,7 @@ echo -e "${PRTY} Ready to push deployment scripts to the target server,
 echo -e "${PRTY} Inserting scripts, variables, secrets and keys into, '${BUNDLE_NAME}'...";
 
 mkdir -p ${BUNDLED_SECRETS};
-cp -p ./target/* ${BUNDLE_DIRECTORY};
+cp -rp ./target/* ${BUNDLE_DIRECTORY};
 
 
 pushd ${BUNDLING_DIRECTORY} >/dev/null;
@@ -329,8 +328,7 @@ scp ./target/askPassMaker.sh ${SETUP_USER_UID}@${TARGET_SRVR}:~ >/dev/null || er
 ssh ${SETUP_USER_UID}@${TARGET_SRVR} "source askPassMaker.sh; makeAskPassService '${SETUP_USER_UID}' '${SETUP_USER_PWD}';"
 # >/dev/null || errorUnexpectedRPCResult;
 
-
-echo -e "${PRTY} Installing Habitat on the target...";
+echo -e "${PRTY} Prepare Meteor App Target Server...";
 echo -e "ssh ${SETUP_USER_UID}@${TARGET_SRVR} \". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/PrepareMeteorAppTargetServer.sh\";";
 
 ssh ${SETUP_USER_UID}@${TARGET_SRVR} ". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/PrepareMeteorAppTargetServer.sh" || errorUnexpectedRPCResult;
@@ -347,7 +345,8 @@ if ! ssh-add -l | grep "${DEPLOY_USER_SSH_KEY_PUBL%.pub}" &>/dev/null; then
 EOF
 fi;
 
-# ---------------------
+echo -e "${PRETTY}Pushed installer scripts to host :: '${TARGET_SRVR}'.";
+# ----------------------
 echo -e "${PRTY} Testing SSH connection using... [   ssh ${DEPLOY_USER}@${TARGET_SRVR} 'whoami';  ]";
 if [[ "X${DEPLOY_USER}X" = "XX" ]]; then errorNoUserAccountSpecified "null"; fi;
 REMOTE_USER=$(ssh -qt -oBatchMode=yes -l ${DEPLOY_USER} ${TARGET_SRVR} whoami) || errorCannotCallRemoteProcedure "${DEPLOY_USER}@${TARGET_SRVR}";

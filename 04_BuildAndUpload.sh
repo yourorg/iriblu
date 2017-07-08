@@ -61,13 +61,13 @@ function setupTargetServer() {
     "${VHOST_SECRETS_PATH}" \
     "${ENVIRONMENT}";
 
-echo -e "${PRETTY}Pushed installer scripts to host :: '${TARGET_SRVR}'.";
-
 ssh -t -oStrictHostKeyChecking=no -oBatchMode=yes -l "${DEPLOY_USER}" "${TARGET_SRVR}" whoami;
-echo -e "${PRETTY}Tested 'hab' user SSH to host '${DEPLOY_USER}' '${TARGET_SRVR}'.";
+echo -e "${PRETTY}Tested '${DEPLOY_USER}' user SSH to host '${TARGET_SRVR}'.";
 
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && sudo -A touch /opt/delete_me" || exit 1;
 echo -e "${PRETTY}Tested sudo ASK_PASS for '${DEPLOY_USER}'@'${TARGET_SRVR}'.";
+
+echo -e "${PRETTY}Pushed installer scripts to host :: '${TARGET_SRVR}'.";
 
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && ~/DeploymentPkgInstallerScripts/DeploymentPackageRunner.sh";
 
@@ -139,3 +139,7 @@ popd &>/dev/null;
 
 echo -e "${PRETTY}
  ... done!";
+
+
+# echo -e "|||||||||||||| C U R T A I L E D |||||||||||||||||||||";
+exit;
