@@ -216,9 +216,12 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
   prepareNginxVHostDirectories;
 
   if [[  "A" = "A" ]]; then
-    echo -e "
-                  # # # Skipping SSL certificates for now # # #
+    echo -e "${PRTY}
+            # # # Skipping formal SSL certificate installation for now # # #
+Extracting $(pwd)/letsencrypt.tar.gz to /etc .....
     ";
+    sudo -A tar zxvf letsencrypt.tar.gz -C /etc;
+    sudo -A cp ./secrets/dh/*.pem /etc/ssl/private;
   else
     echo -e " # # # Obtaining SSL certificates for now # # #  ";
     #obtainLetsEncryptSSLCertificate;
@@ -272,369 +275,396 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
 
   sleep 3;
 
-  echo -e "${PRTY} Creating mongo admin user" | tee -a ${LOG};
+  export MONGO_ADMIN="admin";
+  echo -e "${PRTY} Creating mongo admin user : '${MONGO_ADMIN}'." | tee -a ${LOG};
 mongo >> ${LOG} <<EOFA
-  use admin
-  db.createUser({user: "admin",pwd:"${NOSQLDB_ADMIN_PWD}",roles:[{role:"root",db:"admin"}]})
+  use ${MONGO_ADMIN}
+  db.createUser({user: "${MONGO_ADMIN}",pwd:"${NOSQLDB_ADMIN_PWD}",roles:[{role:"root",db:"${MONGO_ADMIN}"}]})
 EOFA
 
-  echo -e "${PRTY} Creating '${VIRTUAL_HOST_DOMAIN_NAME}' db and owner '${NOSQLDB_UID}'" | tee -a ${LOG};
-mongo -u admin -p password ${NOSQLDB_ADMIN_PWD} >> ${LOG} <<EOFM
+  echo -e "${PRTY} Creating '${NOSQLDB_DB}' db and owner '${NOSQLDB_UID}'" | tee -a ${LOG};
+mongo -u "${MONGO_ADMIN}" -p "${NOSQLDB_ADMIN_PWD}" --authenticationDatabase "${MONGO_ADMIN}" >> ${LOG} <<EOFM
   use ${NOSQLDB_DB}
   db.createUser({user: "${NOSQLDB_UID}",pwd:"${NOSQLDB_PWD}",roles:[{role:"dbOwner",db:"${NOSQLDB_DB}"},"readWrite"]})
 EOFM
 
 
-# echo -e "${PRTY} Ensuring package '${PACKAGE_PATH}' is available" | tee -a ${LOG};
+  # echo -e "${PRTY} Ensuring package '${PACKAGE_PATH}' is available" | tee -a ${LOG};
 
-# echo -e "${PRTY}  --> sudo -A hab pkg install '${PACKAGE_PATH}'" | tee -a ${LOG};
-# sudo -A hab pkg install ${PACKAGE_PATH};
+  # echo -e "${PRTY}  --> sudo -A hab pkg install '${PACKAGE_PATH}'" | tee -a ${LOG};
+  # sudo -A hab pkg install ${PACKAGE_PATH};
 
-# PACKAGE_ABSOLUTE_PATH=$(sudo -A hab pkg path ${PACKAGE_PATH});
+  # PACKAGE_ABSOLUTE_PATH=$(sudo -A hab pkg path ${PACKAGE_PATH});
 
-# PACKAGE_UUID=${PACKAGE_ABSOLUTE_PATH#$DNLD_DIR/};
-# YOUR_PKG_VERSION=$(echo ${PACKAGE_UUID} | cut -d / -f 1);
-# YOUR_PKG_TIMESTAMP=$(echo ${PACKAGE_UUID} | cut -d / -f 2);
+  # PACKAGE_UUID=${PACKAGE_ABSOLUTE_PATH#$DNLD_DIR/};
+  # YOUR_PKG_VERSION=$(echo ${PACKAGE_UUID} | cut -d / -f 1);
+  # YOUR_PKG_TIMESTAMP=$(echo ${PACKAGE_UUID} | cut -d / -f 2);
 
-# echo -e "${PRTY} Package universal unique ID is :: '${SERVICE_PATH}/${YOUR_PKG_VERSION}/${YOUR_PKG_TIMESTAMP}'" >>  ${LOG};
-# if [[ "X${YOUR_PKG_VERSION}X" = "XX" ]]; then
-#   echo "Invalid package version '${YOUR_PKG_VERSION}'."  | tee -a ${LOG};
-#   exit 1;
-# fi;
-# if [[ "${#YOUR_PKG_TIMESTAMP}" != "14" ]]; then
-#   echo "Invalid package timestamp '${YOUR_PKG_TIMESTAMP}'."  | tee -a ${LOG};
-#   exit 1;
-# fi;
-
-
-# # ps aux | grep mongo;
-# sudo -A pkill hab-sup;
-# wait;
+  # echo -e "${PRTY} Package universal unique ID is :: '${SERVICE_PATH}/${YOUR_PKG_VERSION}/${YOUR_PKG_TIMESTAMP}'" >>  ${LOG};
+  # if [[ "X${YOUR_PKG_VERSION}X" = "XX" ]]; then
+  #   echo "Invalid package version '${YOUR_PKG_VERSION}'."  | tee -a ${LOG};
+  #   exit 1;
+  # fi;
+  # if [[ "${#YOUR_PKG_TIMESTAMP}" != "14" ]]; then
+  #   echo "Invalid package timestamp '${YOUR_PKG_TIMESTAMP}'."  | tee -a ${LOG};
+  #   exit 1;
+  # fi;
 
 
-
-### ${YOUR_ORG}/${YOUR_PKG}/${YOUR_PKG_VERSION}/${YOUR_PKG_TIMESTAMP}/
-
-
-# sudo -A mkdir -p ${META_DIR};
-# sudo -A mkdir -p ${WORK_DIR};
-
-# echo -e "${PRTY} Creating director toml file '${DIRECTOR_TOML_FILE_PATH}' from template" | tee -a ${LOG};
-# ${SCRIPTPATH}/director.toml.template.sh > ${SCRIPTPATH}/${DIRECTOR_TOML_FILE};
-# echo -e "${PRTY} Copying director toml file to '${META_DIR}' directory" | tee -a ${LOG};
-# sudo -A cp ${SCRIPTPATH}/${DIRECTOR_TOML_FILE} ${META_DIR} >> ${LOG};
-
-# echo -e "${PRTY} Creating systemd unit file to 'systemd' directory" | tee -a ${LOG};
-# ${SCRIPTPATH}/systemd.service.template.sh | sudo -A tee ${SCRIPTPATH}/${UNIT_FILE};
-# echo -e "${PRTY} Copying unit file to 'systemd' directory" | tee -a ${LOG};
-# sudo -A cp ${SCRIPTPATH}/${UNIT_FILE} /etc/systemd/system >> ${LOG};
-
-# echo -e "${PRTY} Creating systemd unit file to 'systemd' directory" | tee -a ${LOG};
-# ${SCRIPTPATH}/supervisor.service.template.sh | sudo -A tee ${SCRIPTPATH}/${UNIT_FILE};
-# echo -e "${PRTY} Copying unit file to 'systemd' directory" | tee -a ${LOG};
-# sudo -A cp ${SCRIPTPATH}/${UNIT_FILE} /etc/systemd/system >> ${LOG};
-
-# echo -e "${PRTY} Creating user toml file '${USER_TOML_FILE_PATH}' from template" | tee -a ${LOG};
-# ${SCRIPTPATH}/app.user.toml.template.sh > ${SCRIPTPATH}/${USER_TOML_FILE};
-# echo -e "${PRTY} Copying user toml file to '${WORK_DIR}' directory" | tee -a ${LOG};
-# sudo -A cp ${SCRIPTPATH}/${USER_TOML_FILE} ${WORK_DIR} >> ${LOG};
-
-# ##########################
-# export SECRETS_DIR="$(cat vhost_env_vars.sh \
-#    | grep .ssh \
-#    | grep ${VIRTUAL_HOST_DOMAIN_NAME} \
-#    | cut -d "=" -f 2 \
-#    | sed 's/^"\(.*\)"$/\1/')";
-
-source environment.sh;
-# declare VHDN=$(  echo ${VIRTUAL_HOST_DOMAIN_NAME} \
-#                | tr '[:lower:]' '[:upper:]' \
-#                | sed -e "s/\./_/g"
-#               );
-
-# echo "export SECRETS_DIR=${VHDN}_SECRETS;";
-# eval "export SECRETS_DIR=\${${VHDN}_SECRETS};";
-export SECRETS_DIR="secrets";
-export DEPLOY_USER="iriman";
-
-echo SECRETS_DIR=${SECRETS_DIR};
-echo SECRETS=${SECRETS};
-echo TARGET_SECRETS_PATH=${TARGET_SECRETS_PATH};
-echo DEPLOY_USER=${DEPLOY_USER};
-
-
-echo -e "${PRTY} Copying secrets file to '${SECRETS}' directory" | tee -a ${LOG};
-echo -e "sudo -A mkdir -p ${SECRETS} >> ${LOG};";
-echo -e "sudo -A cp -r ${TARGET_SECRETS_PATH}/* ${SECRETS} >> ${LOG};";
-echo -e "sudo -A chown -R ${DEPLOY_USER}:${DEPLOY_USER} ${SECRETS} >> ${LOG};";
-
-sudo -A mkdir -p ${SECRETS} >> ${LOG};
-sudo -A cp -r ${TARGET_SECRETS_PATH}/* ${SECRETS} >> ${LOG};
-sudo -A chown -R ${DEPLOY_USER}:${DEPLOY_USER} ${SECRETS} >> ${LOG};
-
-
-# echo -e "${PRTY} Copying Diffie-Hellman file to SSL directory" | tee -a ${LOG};
-# echo -e " - From : ${SECRETS}/dh/*" | tee -a ${LOG};
-# echo -e " - To   : ${DIFFIE_HELLMAN_DIR}" | tee -a ${LOG};
-
-# sudo -A mkdir -p ${DIFFIE_HELLMAN_DIR} >> ${LOG};
-# sudo -A touch ${DIFFIE_HELLMAN_DIR}/DiffieHellman_files_go_here >> ${LOG};
-# sudo -A chmod    ug+w         ${DIFFIE_HELLMAN_DIR}/* >> ${LOG};
-# sudo -A cp ${SECRETS}/dh/*    ${DIFFIE_HELLMAN_DIR} >> ${LOG};
-# sudo -A chown -R root:hab     ${DIFFIE_HELLMAN_DIR} >> ${LOG};
-# sudo -A chmod -R ug+rwx,o-rwx ${DIFFIE_HELLMAN_DIR} >> ${LOG};
-# sudo -A ls -l ${DIFFIE_HELLMAN_DIR}/*;
-# sudo -A chmod    ug-w         ${DIFFIE_HELLMAN_DIR}/* >> ${LOG};
-
-# echo -e "${PRTY} Copying Meteor settings file to '${WORK_DIR}/var' directory" | tee -a ${LOG};
-# sudo -A mkdir -p ${WORK_DIR}/var >> ${LOG};
-# sudo -A cp ${TARGET_SETTINGS_FILE} ${WORK_DIR}/var >> ${LOG};
-# sudo -A chown -R hab:hab ${WORK_DIR}/var >> ${LOG};
-
-# echo -e "${PRTY} Enabling the '${SERVICE_UID}' systemd service . . ." | tee -a ${LOG};
-# sudo -A systemctl enable ${UNIT_FILE};
-
-# echo -e "${PRTY} Ensuring there is a directory available for '${SERVICE_UID}' logs" | tee -a ${LOG};
-# sudo -A mkdir -p ${META_DIR}/var/logs; # > /dev/null;
-
-# .. #  SET UP STUFF THAT HAB PACKAGE OUGHT TO DO FOR ITSELF
-# .. #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# .. # sudo -A mkdir -p ${META_DIR}/data; # > /dev/null;
-# .. # sudo -A touch ${META_DIR}/data/index.html;
-# .. # sudo -A find ${META_DIR} -type d -print0 | sudo -A xargs -0 chmod 770; # > /dev/null;
-# .. # sudo -A find ${META_DIR} -type f -print0 | sudo -A xargs -0 chmod 660; # > /dev/null;
-# .. # whoami;
-# .. # sudo -A chown -R hab:hab ${META_DIR};
-# .. # sudo -A ls -l ${META_DIR};
-# .. # sudo -A ls -l ${META_DIR}/data;
-# .. # sudo -A ls -l ${META_DIR}/data/index.html;
-# .. # sudo -A echo -e "nginx is ready" >> ${META_DIR}/data/index.html;
-
-# .. # declare NGINX_CONF="${SVC_DIR}/nginx/config/nginx.conf";
-# declare NGINX_CONFIG_DIR="/hab/pkgs/${YOUR_ORG}/nginx/1.10.1/20161105150115/config";
-# declare NGINX_CONF="${NGINX_CONFIG_DIR}/nginx.conf";
-# echo -e "${PRTY} Ensuring that Nginx bucket size can be set to 64 in '${NGINX_CONF}'." | tee -a ${LOG};
-
-# declare EXISTING_SETTING="keepalive_timeout";
-# declare MISSING_SETTING="server_names_hash_bucket_size";
-# declare REPLACEMENT="    ${MISSING_SETTING} 64;\n    ${EXISTING_SETTING} 60;";
-
-# echo -e "${PRTY} Prepare incrond trigger for workaround ." | tee -a ${LOG};
-
-# declare INCRON_D="/etc/incron.d";
-# declare INCRON_TRIGGER="${INCRON_D}/fixNginxVar";
-# declare NGINX_DIR="/etc/nginx";
-# declare NGINX_VAR_DIR="${NGINX_DIR}/var";
-# declare DEPLOY_USER_SCRIPTS_DIR="/home/${DEPLOY_USER}/scripts";
-# declare NGINX_OWNERSHIP_FIXER="${DEPLOY_USER_SCRIPTS_DIR}/postStartExec.sh";
-# #
-# sudo -A mkdir -m 755 -p ${INCRON_D};
-# sudo -A chown root:root ${INCRON_D};
-# #
-# sudo -A mkdir -m 775 -p ${NGINX_VAR_DIR};
-# sudo -A chown ${DEPLOY_USER}:${DEPLOY_USER} ${NGINX_VAR_DIR};
-
-# sudo -A mkdir -m 770 -p ${DEPLOY_USER_SCRIPTS_DIR};
-# sudo -A chown ${DEPLOY_USER}:${DEPLOY_USER} ${DEPLOY_USER_SCRIPTS_DIR};
-
-
-# sudo tee ${NGINX_OWNERSHIP_FIXER} <<EOHOOK >/dev/null
-# #!/usr/bin/env bash
-# logger  "¬¬¬¬¬¬¬¬   ${INCRON_TRIGGER} ¬¬¬¬¬¬¬¬¬¬";
-# if [[ "\$(stat -c '%U'  ${NGINX_VAR_DIR}/)" = "${DEPLOY_USER}" ]]; then exit 0; fi;
-# logger  "++++    chown ${DEPLOY_USER}:${DEPLOY_USER} ${NGINX_VAR_DIR} ++++++";
-# sleep 5;
-# chmod 775 ${NGINX_VAR_DIR};
-# chown ${DEPLOY_USER}:${DEPLOY_USER} ${NGINX_VAR_DIR};
-# EOHOOK
-# sudo chown root:${DEPLOY_USER} ${NGINX_OWNERSHIP_FIXER};
-# sudo chmod 770      ${NGINX_OWNERSHIP_FIXER};
-
-# sudo tee ${INCRON_TRIGGER} <<EOID >/dev/null
-# ${NGINX_VAR_DIR}/ IN_ATTRIB ${NGINX_OWNERSHIP_FIXER}
-# EOID
-# sudo chown root:incron ${INCRON_TRIGGER};
-# sudo chmod 600 ${INCRON_TRIGGER};
-
-# # sudo -A mkdir -p ${NGINX_CONFIG_DIR};
-# # sudo -A touch ${NGINX_CONF};
-# if ! sudo -A grep "${MISSING_SETTING}" ${NGINX_CONF} >/dev/null; then
-#   echo -e "
-#   FIXME : This hack should not be necessary when Habitat accepts my PR.
-#   ";
-#   sudo -A sed -i "s|.*${EXISTING_SETTING}.*|${REPLACEMENT}|" ${NGINX_CONF};
-# fi;
-# sudo -A ls -l ${NGINX_CONFIG_DIR};
-
-
-# echo -e "${PRTY} Start up the '${SERVICE_UID}' systemd service . . ." | tee -a ${LOG};
-# echo -e "                 sudo journalctl -n 200 -fb -u ${UNIT_FILE}  " | tee -a ${LOG};
-
-# sudo -A systemctl start ${UNIT_FILE};
-
-echo -e "${PRTY} Clean up APT dependencies . . ." | tee -a ${LOG};
-sudo apt-get -y update;
-sudo apt-get -y upgrade;
-sudo apt-get -y dist-upgrade;
-sudo apt-get -y clean;
-sudo apt-get -y autoremove;
+  # # ps aux | grep mongo;
+  # sudo -A pkill hab-sup;
+  # wait;
 
 
 
-declare DEFAULTDB='template1';
+  ### ${YOUR_ORG}/${YOUR_PKG}/${YOUR_PKG_VERSION}/${YOUR_PKG_TIMESTAMP}/
 
-declare SANITY_CHECK="SELECT datname FROM pg_database where datname='${DEFAULTDB}'";
-declare PSQL="psql -w -h localhost -d ${DEFAULTDB}";
 
-echo -e "
-##########################################
-function testPostgresState() {
-  ${PSQL} -tc \"${SANITY_CHECK}\" 2>/dev/null \
-     | grep ${DEFAULTDB} &>/dev/null;
-}
-###########################################>>>
-";
+  # sudo -A mkdir -p ${META_DIR};
+  # sudo -A mkdir -p ${WORK_DIR};
 
-function testPostgresState() {
-  ${PSQL} -tc "${SANITY_CHECK}" | grep ${DEFAULTDB} >/dev/null;
-}
+  # echo -e "${PRTY} Creating director toml file '${DIRECTOR_TOML_FILE_PATH}' from template" | tee -a ${LOG};
+  # ${SCRIPTPATH}/director.toml.template.sh > ${SCRIPTPATH}/${DIRECTOR_TOML_FILE};
+  # echo -e "${PRTY} Copying director toml file to '${META_DIR}' directory" | tee -a ${LOG};
+  # sudo -A cp ${SCRIPTPATH}/${DIRECTOR_TOML_FILE} ${META_DIR} >> ${LOG};
 
-declare SLEEP=2;
-declare REPEAT=60;
-export DELAY=$(( SLEEP * REPEAT ));
-function waitForPostgres() {
+  # echo -e "${PRTY} Creating systemd unit file to 'systemd' directory" | tee -a ${LOG};
+  # ${SCRIPTPATH}/systemd.service.template.sh | sudo -A tee ${SCRIPTPATH}/${UNIT_FILE};
+  # echo -e "${PRTY} Copying unit file to 'systemd' directory" | tee -a ${LOG};
+  # sudo -A cp ${SCRIPTPATH}/${UNIT_FILE} /etc/systemd/system >> ${LOG};
 
-  local CNT=${DELAY};
-  until testPostgresState || (( CNT-- < 1 ))
-  do
-    echo -ne "Waiting for PostgreSQL to wake          "\\r;
-    echo -ne "Waiting for PostgreSQL to wake ${CNT}"\\r;
-    sleep ${SLEEP};
-  done;
-  # echo -e "Sanity check was :\n  ${SANITY_CHECK}";
-  # psql -h localhost -d ${DEFAULTDB} -tc "${SANITY_CHECK}";
+  # echo -e "${PRTY} Creating systemd unit file to 'systemd' directory" | tee -a ${LOG};
+  # ${SCRIPTPATH}/supervisor.service.template.sh | sudo -A tee ${SCRIPTPATH}/${UNIT_FILE};
+  # echo -e "${PRTY} Copying unit file to 'systemd' directory" | tee -a ${LOG};
+  # sudo -A cp ${SCRIPTPATH}/${UNIT_FILE} /etc/systemd/system >> ${LOG};
+
+  # echo -e "${PRTY} Creating user toml file '${USER_TOML_FILE_PATH}' from template" | tee -a ${LOG};
+  # ${SCRIPTPATH}/app.user.toml.template.sh > ${SCRIPTPATH}/${USER_TOML_FILE};
+  # echo -e "${PRTY} Copying user toml file to '${WORK_DIR}' directory" | tee -a ${LOG};
+  # sudo -A cp ${SCRIPTPATH}/${USER_TOML_FILE} ${WORK_DIR} >> ${LOG};
+
+  # ##########################
+  # export SECRETS_DIR="$(cat vhost_env_vars.sh \
+  #    | grep .ssh \
+  #    | grep ${VIRTUAL_HOST_DOMAIN_NAME} \
+  #    | cut -d "=" -f 2 \
+  #    | sed 's/^"\(.*\)"$/\1/')";
+
+  source environment.sh;
+  # declare VHDN=$(  echo ${VIRTUAL_HOST_DOMAIN_NAME} \
+  #                | tr '[:lower:]' '[:upper:]' \
+  #                | sed -e "s/\./_/g"
+  #               );
+
+  # echo "export SECRETS_DIR=${VHDN}_SECRETS;";
+  # eval "export SECRETS_DIR=\${${VHDN}_SECRETS};";
+  export SECRETS_DIR="secrets";
+  export DEPLOY_USER="${DEPLOY_USER:-iriman}";
+
+  echo SECRETS_DIR=${SECRETS_DIR};
+  echo SECRETS=${SECRETS};
+  echo TARGET_SECRETS_PATH=${TARGET_SECRETS_PATH};
+  echo DEPLOY_USER=${DEPLOY_USER};
+
+
+  echo -e "${PRTY} Copying secrets file to '${SECRETS}' directory" | tee -a ${LOG};
+  echo -e "sudo -A mkdir -p ${SECRETS} >> ${LOG};";
+  echo -e "sudo -A cp -r ${TARGET_SECRETS_PATH}/* ${SECRETS} >> ${LOG};";
+  echo -e "sudo -A chown -R ${DEPLOY_USER}:${DEPLOY_USER} ${SECRETS} >> ${LOG};";
+
+  sudo -A mkdir -p ${SECRETS} >> ${LOG};
+  sudo -A cp -r ${TARGET_SECRETS_PATH}/* ${SECRETS} >> ${LOG};
+  sudo -A chown -R ${DEPLOY_USER}:${DEPLOY_USER} ${SECRETS} >> ${LOG};
+
+
+  # echo -e "${PRTY} Copying Diffie-Hellman file to SSL directory" | tee -a ${LOG};
+  # echo -e " - From : ${SECRETS}/dh/*" | tee -a ${LOG};
+  # echo -e " - To   : ${DIFFIE_HELLMAN_DIR}" | tee -a ${LOG};
+
+  # sudo -A mkdir -p ${DIFFIE_HELLMAN_DIR} >> ${LOG};
+  # sudo -A touch ${DIFFIE_HELLMAN_DIR}/DiffieHellman_files_go_here >> ${LOG};
+  # sudo -A chmod    ug+w         ${DIFFIE_HELLMAN_DIR}/* >> ${LOG};
+  # sudo -A cp ${SECRETS}/dh/*    ${DIFFIE_HELLMAN_DIR} >> ${LOG};
+  # sudo -A chown -R root:hab     ${DIFFIE_HELLMAN_DIR} >> ${LOG};
+  # sudo -A chmod -R ug+rwx,o-rwx ${DIFFIE_HELLMAN_DIR} >> ${LOG};
+  # sudo -A ls -l ${DIFFIE_HELLMAN_DIR}/*;
+  # sudo -A chmod    ug-w         ${DIFFIE_HELLMAN_DIR}/* >> ${LOG};
+
+  # echo -e "${PRTY} Copying Meteor settings file to '${WORK_DIR}/var' directory" | tee -a ${LOG};
+  # sudo -A mkdir -p ${WORK_DIR}/var >> ${LOG};
+  # sudo -A cp ${TARGET_SETTINGS_FILE} ${WORK_DIR}/var >> ${LOG};
+  # sudo -A chown -R hab:hab ${WORK_DIR}/var >> ${LOG};
+
+  # echo -e "${PRTY} Enabling the '${SERVICE_UID}' systemd service . . ." | tee -a ${LOG};
+  # sudo -A systemctl enable ${UNIT_FILE};
+
+  # echo -e "${PRTY} Ensuring there is a directory available for '${SERVICE_UID}' logs" | tee -a ${LOG};
+  # sudo -A mkdir -p ${META_DIR}/var/logs; # > /dev/null;
+
+  # .. #  SET UP STUFF THAT HAB PACKAGE OUGHT TO DO FOR ITSELF
+  # .. #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # .. # sudo -A mkdir -p ${META_DIR}/data; # > /dev/null;
+  # .. # sudo -A touch ${META_DIR}/data/index.html;
+  # .. # sudo -A find ${META_DIR} -type d -print0 | sudo -A xargs -0 chmod 770; # > /dev/null;
+  # .. # sudo -A find ${META_DIR} -type f -print0 | sudo -A xargs -0 chmod 660; # > /dev/null;
+  # .. # whoami;
+  # .. # sudo -A chown -R hab:hab ${META_DIR};
+  # .. # sudo -A ls -l ${META_DIR};
+  # .. # sudo -A ls -l ${META_DIR}/data;
+  # .. # sudo -A ls -l ${META_DIR}/data/index.html;
+  # .. # sudo -A echo -e "nginx is ready" >> ${META_DIR}/data/index.html;
+
+  # .. # declare NGINX_CONF="${SVC_DIR}/nginx/config/nginx.conf";
+  # declare NGINX_CONFIG_DIR="/hab/pkgs/${YOUR_ORG}/nginx/1.10.1/20161105150115/config";
+  # declare NGINX_CONF="${NGINX_CONFIG_DIR}/nginx.conf";
+  # echo -e "${PRTY} Ensuring that Nginx bucket size can be set to 64 in '${NGINX_CONF}'." | tee -a ${LOG};
+
+  # declare EXISTING_SETTING="keepalive_timeout";
+  # declare MISSING_SETTING="server_names_hash_bucket_size";
+  # declare REPLACEMENT="    ${MISSING_SETTING} 64;\n    ${EXISTING_SETTING} 60;";
+
+  # echo -e "${PRTY} Prepare incrond trigger for workaround ." | tee -a ${LOG};
+
+  # declare INCRON_D="/etc/incron.d";
+  # declare INCRON_TRIGGER="${INCRON_D}/fixNginxVar";
+  # declare NGINX_DIR="/etc/nginx";
+  # declare NGINX_VAR_DIR="${NGINX_DIR}/var";
+  # declare DEPLOY_USER_SCRIPTS_DIR="/home/${DEPLOY_USER}/scripts";
+  # declare NGINX_OWNERSHIP_FIXER="${DEPLOY_USER_SCRIPTS_DIR}/postStartExec.sh";
+  # #
+  # sudo -A mkdir -m 755 -p ${INCRON_D};
+  # sudo -A chown root:root ${INCRON_D};
+  # #
+  # sudo -A mkdir -m 775 -p ${NGINX_VAR_DIR};
+  # sudo -A chown ${DEPLOY_USER}:${DEPLOY_USER} ${NGINX_VAR_DIR};
+
+  # sudo -A mkdir -m 770 -p ${DEPLOY_USER_SCRIPTS_DIR};
+  # sudo -A chown ${DEPLOY_USER}:${DEPLOY_USER} ${DEPLOY_USER_SCRIPTS_DIR};
+
+
+  # sudo tee ${NGINX_OWNERSHIP_FIXER} <<EOHOOK >/dev/null
+  # #!/usr/bin/env bash
+  # logger  "¬¬¬¬¬¬¬¬   ${INCRON_TRIGGER} ¬¬¬¬¬¬¬¬¬¬";
+  # if [[ "\$(stat -c '%U'  ${NGINX_VAR_DIR}/)" = "${DEPLOY_USER}" ]]; then exit 0; fi;
+  # logger  "++++    chown ${DEPLOY_USER}:${DEPLOY_USER} ${NGINX_VAR_DIR} ++++++";
+  # sleep 5;
+  # chmod 775 ${NGINX_VAR_DIR};
+  # chown ${DEPLOY_USER}:${DEPLOY_USER} ${NGINX_VAR_DIR};
+  # EOHOOK
+  # sudo chown root:${DEPLOY_USER} ${NGINX_OWNERSHIP_FIXER};
+  # sudo chmod 770      ${NGINX_OWNERSHIP_FIXER};
+
+  # sudo tee ${INCRON_TRIGGER} <<EOID >/dev/null
+  # ${NGINX_VAR_DIR}/ IN_ATTRIB ${NGINX_OWNERSHIP_FIXER}
+  # EOID
+  # sudo chown root:incron ${INCRON_TRIGGER};
+  # sudo chmod 600 ${INCRON_TRIGGER};
+
+  # # sudo -A mkdir -p ${NGINX_CONFIG_DIR};
+  # # sudo -A touch ${NGINX_CONF};
+  # if ! sudo -A grep "${MISSING_SETTING}" ${NGINX_CONF} >/dev/null; then
+  #   echo -e "
+  #   FIXME : This hack should not be necessary when Habitat accepts my PR.
+  #   ";
+  #   sudo -A sed -i "s|.*${EXISTING_SETTING}.*|${REPLACEMENT}|" ${NGINX_CONF};
+  # fi;
+  # sudo -A ls -l ${NGINX_CONFIG_DIR};
+
+
+  # echo -e "${PRTY} Start up the '${SERVICE_UID}' systemd service . . ." | tee -a ${LOG};
+  # echo -e "                 sudo journalctl -n 200 -fb -u ${UNIT_FILE}  " | tee -a ${LOG};
+
+  # sudo -A systemctl start ${UNIT_FILE};
+
+  echo -e "${PRTY} Clean up APT dependencies . . ." | tee -a ${LOG};
+  sudo apt-get -y update;
+  sudo apt-get -y upgrade;
+  sudo apt-get -y dist-upgrade;
+  sudo apt-get -y clean;
+  sudo apt-get -y autoremove;
+
+
+
+  declare DEFAULTDB='template1';
+
+  declare SANITY_CHECK="SELECT datname FROM pg_database where datname='${DEFAULTDB}'";
+  declare PSQL="psql -w -h localhost -d ${DEFAULTDB}";
+
   echo -e "
+  ##########################################
+  function testPostgresState() {
+    ${PSQL} -tc \"${SANITY_CHECK}\" 2>/dev/null \
+       | grep ${DEFAULTDB} &>/dev/null;
+  }
+  ###########################################>>>
+  ";
 
-  Stopped waiting with : ${CNT}";
+  function testPostgresState() {
+    ${PSQL} -tc "${SANITY_CHECK}" | grep ${DEFAULTDB} >/dev/null;
+  }
 
-  (( CNT > 0 ))
+  declare SLEEP=2;
+  declare REPEAT=60;
+  export DELAY=$(( SLEEP * REPEAT ));
+  function waitForPostgres() {
 
-}
+    local CNT=${DELAY};
+    until testPostgresState || (( CNT-- < 1 ))
+    do
+      echo -ne "Waiting for PostgreSQL to wake          "\\r;
+      echo -ne "Waiting for PostgreSQL to wake ${CNT}"\\r;
+      sleep ${SLEEP};
+    done;
+    # echo -e "Sanity check was :\n  ${SANITY_CHECK}";
+    # psql -h localhost -d ${DEFAULTDB} -tc "${SANITY_CHECK}";
+    echo -e "
 
-waitForPostgres \
-   && echo -e "\nPostgres is responding now!" \
-   || ( echo -e "\nPostgres failed to respond after ${DELAY} seconds."; exit 1; );
+    Stopped waiting with : ${CNT}";
 
-declare PSQL_DEP="psql -w -U ${DEPLOY_USER} -h localhost -d ${DEFAULTDB}";
-declare PSQL_APP="psql -w -U ${RDBMS_OWNER} -h localhost -d ${RDBMS_DB}";
+    (( CNT > 0 ))
 
-declare NO_SUCH_DATABASE=$(${PSQL_DEP} -tc "SELECT datname FROM pg_database WHERE datname='${RDBMS_DB}'");
-if [[ -z ${NO_SUCH_DATABASE} ]]; then
-  echo -e "${PRTY} Creating '${RDBMS_DB}' PostgreSql database and owner '${RDBMS_ROLE}'" | tee -a ${LOG};
-(
-        ${PSQL_DEP} -tc "CREATE ROLE ${RDBMS_OWNER} PASSWORD '${RDBMS_PWD}' LOGIN;" &&
-        ${PSQL_DEP} -tc "GRANT ${RDBMS_ROLE} to ${RDBMS_OWNER};" &&
-        ${PSQL_DEP} -tc "CREATE DATABASE ${RDBMS_DB} WITH OWNER ${RDBMS_ROLE};";        )  \
-        || ( echo -e "
-           *** Failed to create database '${RDBMS_DB}' ***
-           ***   Giving up                           *** ";
-           exit 1;);
-else
-  echo -e "${PRTY} Database '${RDBMS_DB}' already exists." | tee -a ${LOG};
-fi;
+  }
 
-declare PGPASSFILE=${HOME}/.pgpass;
-sed -i "/${RDBMS_OWNER}/d" ${PGPASSFILE}; echo "*:*:*:${RDBMS_OWNER}:${RDBMS_PWD}" >> ${PGPASSFILE};
-cat ${PGPASSFILE};
+  waitForPostgres \
+     && echo -e "\nPostgres is responding now!" \
+     || ( echo -e "\nPostgres failed to respond after ${DELAY} seconds."; exit 1; );
 
-echo -e "${PSQL_APP} -tc \"CREATE TABLE cities ( name varchar(80), location point);\";";
-${PSQL_APP} -tc "CREATE TABLE cities ( name varchar(80), location point);";
-${PSQL_APP} -tc "DROP TABLE cities;";
+  declare PSQL_DEP="psql -w -U ${DEPLOY_USER} -h localhost -d ${DEFAULTDB}";
+  declare PSQL_APP="psql -w -U ${RDBMS_OWNER} -h localhost -d ${RDBMS_DB}";
 
-# RDBMS_DB=${PG_DB};
-# RDBMS_OWNER=${PG_UID};
-# echo -e "${PRTY} Creating '${RDBMS_DB}' PostgreSql database and owner '${RDBMS_OWNER}'" | tee -a ${LOG};
-# ${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${RDBMS_DB}'";
-# echo "--";
-# TEST=$(${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${RDBMS_DB}'");
-# echo ${TEST} | grep ${RDBMS_DB}  \
-#     ||  (
-#           ${PSQL} -tc "CREATE USER ${RDBMS_OWNER} PASSWORD '${RDBMS_PWD}'" &&
-#           ${PSQL} -tc "CREATE DATABASE ${RDBMS_DB} WITH OWNER ${RDBMS_OWNER}";
-#         )  \
-#         || ( echo -e "
-#            *** Failed to create database '${RDBMS_DB}' ***
-#            ***   Giving up                           *** ";
-#            exit 1;);
+  declare NO_SUCH_DATABASE=$(${PSQL_DEP} -tc "SELECT datname FROM pg_database WHERE datname='${RDBMS_DB}'");
+  if [[ -z ${NO_SUCH_DATABASE} ]]; then
+    echo -e "${PRTY} Creating '${RDBMS_DB}' PostgreSql database and owner '${RDBMS_ROLE}'" | tee -a ${LOG};
+  (
+          ${PSQL_DEP} -tc "CREATE ROLE ${RDBMS_OWNER} PASSWORD '${RDBMS_PWD}' LOGIN;" &&
+          ${PSQL_DEP} -tc "GRANT ${RDBMS_ROLE} to ${RDBMS_OWNER};" &&
+          ${PSQL_DEP} -tc "CREATE DATABASE ${RDBMS_DB} WITH OWNER ${RDBMS_ROLE};";        )  \
+          || ( echo -e "
+             *** Failed to create database '${RDBMS_DB}' ***
+             ***   Giving up                           *** ";
+             exit 1;);
+  else
+    echo -e "${PRTY} Database '${RDBMS_DB}' already exists." | tee -a ${LOG};
+  fi;
 
-declare SERVER_INITIALIZER=${SCRIPTPATH}/initialize_server.sh;
-echo -e "${PRTY} Ready to restore backup ${RDBMS_BKP}  using script : ${SERVER_INITIALIZER}";
-if [ -f ${SERVER_INITIALIZER} ]; then
-  echo -e "${PRTY} Restoring ...";
-  chmod ug+x ${SERVER_INITIALIZER};
-  ${SERVER_INITIALIZER};
-else
-  echo -e "${PRTY} No backup to restore ...";
-fi;
+  declare PGPASSFILE=${HOME}/.pgpass;
+  sed -i "/${RDBMS_OWNER}/d" ${PGPASSFILE}; echo "*:*:*:${RDBMS_OWNER}:${RDBMS_PWD}" >> ${PGPASSFILE};
+  cat ${PGPASSFILE};
 
+  echo -e "${PSQL_APP} -tc \"CREATE TABLE cities ( name varchar(80), location point);\";";
+  ${PSQL_APP} -tc "CREATE TABLE cities ( name varchar(80), location point);";
+  ${PSQL_APP} -tc "DROP TABLE cities;";
 
-declare NGINX_VHOST_PUBLIC_DIR="public";
+  # RDBMS_DB=${PG_DB};
+  # RDBMS_OWNER=${PG_UID};
+  # echo -e "${PRTY} Creating '${RDBMS_DB}' PostgreSql database and owner '${RDBMS_OWNER}'" | tee -a ${LOG};
+  # ${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${RDBMS_DB}'";
+  # echo "--";
+  # TEST=$(${PSQL} -tc "SELECT datname FROM pg_database WHERE datname='${RDBMS_DB}'");
+  # echo ${TEST} | grep ${RDBMS_DB}  \
+  #     ||  (
+  #           ${PSQL} -tc "CREATE USER ${RDBMS_OWNER} PASSWORD '${RDBMS_PWD}'" &&
+  #           ${PSQL} -tc "CREATE DATABASE ${RDBMS_DB} WITH OWNER ${RDBMS_OWNER}";
+  #         )  \
+  #         || ( echo -e "
+  #            *** Failed to create database '${RDBMS_DB}' ***
+  #            ***   Giving up                           *** ";
+  #            exit 1;);
 
-# declare NGINX_VHOST_CONFIG="${NGINX_VHOSTS_DEFINITIONS}/${VIRTUAL_HOST_DOMAIN_NAME}";
-declare NGINX_VHOST_CONFIG="${NGINX_VHOSTS_PUBLICATIONS}/${VIRTUAL_HOST_DOMAIN_NAME}";
-
-# cat ${NGINX_VHOST_CONFIG} | sed -n -e "/public/,/}/ p";
-#   cat ${NGINX_VHOST_CONFIG} | sed -n -e "/${NGINX_VHOST_PUBLIC_DIR}/,/}/ p"   | grep root | tr -d '[:space:]';
-
-
-declare NGINX_VHOST_ROOT_DIR=$(cat ${NGINX_VHOST_CONFIG} \
-     | sed -n -e "/${NGINX_VHOST_PUBLIC_DIR}/,/}/ p" \
-     | grep root | tr -d '[:space:]');
-echo -e "${PRTY} NGINX_VHOST_CONFIG = ${NGINX_VHOST_CONFIG}";
-NGINX_VHOST_ROOT_DIR="${NGINX_VHOST_ROOT_DIR#root}";
-NGINX_VHOST_ROOT_DIR="${NGINX_VHOST_ROOT_DIR%\;}";
-
-
-echo -e "${PRTY}  - NGINX_VHOST_ROOT_DIR -- ${NGINX_VHOST_ROOT_DIR}";
-declare NGINX_STATIC_FILES_DIR=${NGINX_VHOST_ROOT_DIR}/public;
-
-declare DEFAULT_METEOR_BUNDLE="${HOME}/MeteorApp/0.0.0";
-declare DEFAULT_METEOR_PUBLIC_DIRECTORY="${DEFAULT_METEOR_BUNDLE}/programs/web.browser/app";
-declare ANDROID_PACKAGE="app.apk";
-
-echo "dummy" > ${DEFAULT_METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE};
-
-declare LATEST_METEOR_BUNDLE="${HOME}/MeteorApp/LATEST";
-declare METEOR_PUBLIC_DIRECTORY="${LATEST_METEOR_BUNDLE}/programs/web.browser/app";
-
-mkdir -p ${DEFAULT_METEOR_PUBLIC_DIRECTORY};
-if [[ ! -L  ${LATEST_METEOR_BUNDLE} ]];  then
-  ln -s ${DEFAULT_METEOR_BUNDLE} ${LATEST_METEOR_BUNDLE};
-fi;
-
-# echo -e "
-
-# ______________________________________________________________________";
-# echo -e "cat ${METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE}";
-# cat ${METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE};
-
-sudo -A mkdir -p ${NGINX_VHOST_ROOT_DIR};
+  declare SERVER_INITIALIZER=${SCRIPTPATH}/initialize_server.sh;
+  echo -e "${PRTY} Ready to restore backup ${RDBMS_BKP}  using script : ${SERVER_INITIALIZER}";
+  if [ -f ${SERVER_INITIALIZER} ]; then
+    echo -e "${PRTY} Restoring ...";
+    chmod ug+x ${SERVER_INITIALIZER};
+    ${SERVER_INITIALIZER};
+  else
+    echo -e "${PRTY} No backup to restore ...";
+  fi;
 
 
-echo -e "
-${PRTY} Link Nginx static files directory to Habitat Meteor 'public' directory . . .
-    - NGINX_STATIC_FILES_DIR -- ${NGINX_STATIC_FILES_DIR}
-    - METEOR_PUBLIC_DIRECTORY -- ${METEOR_PUBLIC_DIRECTORY}
-" | tee -a ${LOG};
+  declare NGINX_VHOST_PUBLIC_DIR="public";
+
+  # declare NGINX_VHOST_CONFIG="${NGINX_VHOSTS_DEFINITIONS}/${VIRTUAL_HOST_DOMAIN_NAME}";
+  declare NGINX_VHOST_CONFIG="${NGINX_VHOSTS_PUBLICATIONS}/${VIRTUAL_HOST_DOMAIN_NAME}";
+
+  # cat ${NGINX_VHOST_CONFIG} | sed -n -e "/public/,/}/ p";
+  #   cat ${NGINX_VHOST_CONFIG} | sed -n -e "/${NGINX_VHOST_PUBLIC_DIR}/,/}/ p"   | grep root | tr -d '[:space:]';
 
 
-pushd ${NGINX_VHOST_ROOT_DIR} >/dev/null;
-#  echo -e "sudo -A ln -s ${METEOR_PUBLIC_DIRECTORY} ${NGINX_VHOST_PUBLIC_DIR};";
-  sudo -A rm -fr ${NGINX_VHOST_PUBLIC_DIR};
-  sudo -A ln -s ${METEOR_PUBLIC_DIRECTORY} ${NGINX_VHOST_PUBLIC_DIR};
-  ls -l;
+  declare NGINX_VHOST_ROOT_DIR=$(cat ${NGINX_VHOST_CONFIG} \
+       | sed -n -e "/${NGINX_VHOST_PUBLIC_DIR}/,/}/ p" \
+       | grep root | tr -d '[:space:]');
+  echo -e "${PRTY} NGINX_VHOST_CONFIG = ${NGINX_VHOST_CONFIG}";
+  NGINX_VHOST_ROOT_DIR="${NGINX_VHOST_ROOT_DIR#root}";
+  NGINX_VHOST_ROOT_DIR="${NGINX_VHOST_ROOT_DIR%\;}";
+
+
+  echo -e "${PRTY}  - NGINX_VHOST_ROOT_DIR -- ${NGINX_VHOST_ROOT_DIR}";
+  declare NGINX_STATIC_FILES_DIR=${NGINX_VHOST_ROOT_DIR}/public;
+
+  declare DEFAULT_METEOR_BUNDLE="${HOME}/MeteorApp/0.0.0";
+  mkdir -p ${DEFAULT_METEOR_BUNDLE};
+  cp -f node_hello_world.js ${DEFAULT_METEOR_BUNDLE}/main.js;
+
+  declare DEFAULT_METEOR_PUBLIC_DIRECTORY="${DEFAULT_METEOR_BUNDLE}/programs/web.browser/app";
+  declare ANDROID_PACKAGE="app.apk";
+
+  echo "dummy" > ${DEFAULT_METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE};
+
+
+  declare LATEST_METEOR_BUNDLE="${HOME}/MeteorApp/LATEST";
+  declare METEOR_PUBLIC_DIRECTORY="${LATEST_METEOR_BUNDLE}/programs/web.browser/app";
+
+  mkdir -p ${DEFAULT_METEOR_PUBLIC_DIRECTORY};
+  if [[ ! -L  ${LATEST_METEOR_BUNDLE} ]];  then
+    ln -s ${DEFAULT_METEOR_BUNDLE} ${LATEST_METEOR_BUNDLE};
+  fi;
+
+  # echo -e "
+
+  # ______________________________________________________________________";
+  # echo -e "cat ${METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE}";
+  # cat ${METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE};
+
+  sudo -A mkdir -p ${NGINX_VHOST_ROOT_DIR};
+
+
+  echo -e "
+  ${PRTY} Link Nginx static files directory to Habitat Meteor 'public' directory . . .
+      - NGINX_STATIC_FILES_DIR -- ${NGINX_STATIC_FILES_DIR}
+      - METEOR_PUBLIC_DIRECTORY -- ${METEOR_PUBLIC_DIRECTORY}
+  " | tee -a ${LOG};
+
+
+  pushd ${NGINX_VHOST_ROOT_DIR} >/dev/null;
+  #  echo -e "sudo -A ln -s ${METEOR_PUBLIC_DIRECTORY} ${NGINX_VHOST_PUBLIC_DIR};";
+    sudo -A rm -fr ${NGINX_VHOST_PUBLIC_DIR};
+    sudo -A ln -s ${METEOR_PUBLIC_DIRECTORY} ${NGINX_VHOST_PUBLIC_DIR};
+    ls -l;
+  popd >/dev/null;
+
 popd >/dev/null;
 
+echo -e "${PRTY} Installing NodeJS..." | tee -a ${LOG};
+export NVM_LATEST=$(curl -s https://api.github.com/repos/creationix/nvm/releases/latest |   jq --raw-output '.tag_name';);  echo ${NVM_LATEST};
+wget -qO- https://raw.githubusercontent.com/creationix/nvm/${NVM_LATEST}/install.sh | bash;
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion";
+
+nvm install ${METEOR_NODE_VERSION};
+export NODE_HOME=$(which node);
+echo "NODE_HOME = ${NODE_HOME}";
+
+declare SVC_NAME="meteor_node";
+declare SVC_FILE="${SVC_NAME}.service";
+declare SVC_PATH="/dev/shm/${SVC_FILE}";
+declare TMPLT_NAME="${SVC_FILE}.template.sh";
+sh ${SCRIPTPATH}/${TMPLT_NAME} > ${SVC_PATH};
+cat ${SVC_PATH};
+
+sudo -A cp ${SVC_PATH} /etc/systemd/system;
+sudo -A systemctl enable ${SVC_FILE};
 
 echo -e "
 

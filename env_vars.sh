@@ -8,6 +8,9 @@ export TARGET_SRVR="irid.blue";
 export VIRTUAL_HOST_DOMAIN_NAME="reciprocal.trade";
 export DEPLOY_USER_SSH_KEY_COMMENT="IridBlue Deployment User Key";
 
+export IS_GITSUBMODULE="yes";
+
+
 # export VHOST_SUBJECT="/C=CA/ST=Oregon/L=Grant's Pass/O=mmks/CN=${VIRTUAL_HOST_DOMAIN_NAME}";
 
 # export YOUR_ORG="warehouseman";

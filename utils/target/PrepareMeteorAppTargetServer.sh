@@ -20,7 +20,10 @@ function initialSecurityTasks() {
   sudo -A ufw allow from 192.168.122.0/24 to any port 5432;
 
   echo -e "ufw for MongoDB on VPN";
-  sudo -A ufw allow in 27017;
+  sudo -A ufw allow from 192.168.122.0/24 to any port 27017;
+
+  echo -e "ufw for NodeJS on VPN";
+  sudo -A ufw allow from 192.168.122.0/24 to any port 3000;
 
   echo -e "cycle firewall";
   sudo -A ufw disable;
@@ -74,7 +77,7 @@ pushd ${SCRIPTPATH};
 
   source ${ENVIRONMENT};
 
-  DEPLOY_USER='iriman';
+  export DEPLOY_USER="${DEPLOY_USER:-iriman}";
   # DEPLOY_USER_PWD=$(cat ./HabUserPwd.txt);
 
   DEPLOY_DIR=/home/${DEPLOY_USER};
@@ -191,6 +194,7 @@ pushd ${SCRIPTPATH};
   echo -e "${PRTY} Ensuring able to download files.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y curl;
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y tree;
+  sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y unzip;
 
   echo -e "${PRTY} Ensuring able to install SSL certs.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y certbot;
@@ -212,9 +216,6 @@ pushd ${SCRIPTPATH};
   echo -e "${PRTY} Installing NoSQL database service.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y mongodb-org;
 
-pwd;
-ls -l ${HOME}/DeploymentPkgInstallerScripts/mongod.conf;
-
   sudo -A cp ${HOME}/DeploymentPkgInstallerScripts/mongod.conf /etc;
 
   export UNIT_FILE="mongodb.service";
@@ -226,10 +227,6 @@ ls -l ${HOME}/DeploymentPkgInstallerScripts/mongod.conf;
   sudo -A systemctl enable ${UNIT_FILE} >> ${LOG};
   echo -e "${PRTY} Starting '${UNIT_FILE}'." | tee -a ${LOG};
   sudo -A systemctl start ${UNIT_FILE} >> ${LOG};
-
-
-echo -e "|||||||||||||| C U R T A I L E D |||||||||||||||||||||";
-exit;
 
   echo -e "${PRTY} Looking for '${DEPLOY_USER}' user." | tee -a ${LOG};
   if ! id -u ${DEPLOY_USER} &>/dev/null; then
