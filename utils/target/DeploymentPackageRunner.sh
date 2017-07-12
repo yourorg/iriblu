@@ -609,6 +609,7 @@ EOFM
   declare DEFAULT_METEOR_PUBLIC_DIRECTORY="${DEFAULT_METEOR_BUNDLE}/programs/web.browser/app";
   declare ANDROID_PACKAGE="app.apk";
 
+  mkdir -p ${DEFAULT_METEOR_PUBLIC_DIRECTORY};
   echo "dummy" > ${DEFAULT_METEOR_PUBLIC_DIRECTORY}/${ANDROID_PACKAGE};
 
 

@@ -53,6 +53,7 @@ function setupTargetServer() {
   echo -e "${PRETTY} VHOST_SECRETS_PATH=${VHOST_SECRETS_PATH}";
   echo -e "${PRETTY} VHOST_SECRETS_FILE=${VHOST_SECRETS_FILE}";
   echo -e "${PRETTY} VHOST_ENV_VARS=${VHOST_ENV_VARS}";
+  echo -e "${PRETTY} ENV_VARS=${ENV_VARS}";
   cat ${ENV_VARS} ${VHOST_ENV_VARS} > ${ENVIRONMENT};
 
 .deploy/PushInstallerScriptsToTarget.sh \
