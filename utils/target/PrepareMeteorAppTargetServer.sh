@@ -135,6 +135,8 @@ pushd ${SCRIPTPATH};
     exit 1;
   fi;
 
+  echo -e "${PRTY} Installing MariaDB  . . . . . "  | tee -a ${LOG};
+  ./mariadb/installAndSecureMariaDB.sh;
 
   declare APT_SRC_LST="/etc/apt/sources.list.d";
 
@@ -175,7 +177,10 @@ pushd ${SCRIPTPATH};
       || echo ${PGRES_SRC} \
       |  sudo -A tee ${PGRES_APT};
 
-  sudo -A DEBIAN_FRONTEND=noninteractive apt-get update >>  ${LOG};
+  sudo -A DEBIAN_FRONTEND=noninteractive apt-get update -y >>  ${LOG};
+  sudo -A DEBIAN_FRONTEND=noninteractive apt-get upgrade -y >>  ${LOG};
+
+
   echo -e "${PRTY} Installing MongoDb Shell.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y mongodb-org-shell >>  ${LOG};
   echo -e "${PRTY} Installing PostgreSql Client.  "  | tee -a ${LOG};
@@ -215,7 +220,6 @@ pushd ${SCRIPTPATH};
 
   echo -e "${PRTY} Installing NoSQL database service.  "  | tee -a ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get install -y mongodb-org;
-
   sudo -A cp ${HOME}/DeploymentPkgInstallerScripts/mongod.conf /etc;
 
   export UNIT_FILE="mongodb.service";
@@ -335,6 +339,8 @@ EOF
   # sudo -Au postgres psql -d template1 -tc "GRANT ROLE ${DBNAME} to ${DEPLOY_USER};";
 
 popd;
+
+
 
 echo -e "${PRTY} Moving bundle directory, '${BUNDLE_DIRECTORY_NAME}' to '/home/${DEPLOY_USER}'";
 sudo -A rm -fr ${BUNDLE_NAME};

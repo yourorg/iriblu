@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#
+export SUDO_ASKPASS=${HOME}/.ssh/.supwd.sh;
