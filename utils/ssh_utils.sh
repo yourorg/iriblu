@@ -1,6 +1,11 @@
+export PRETTY="ssh_utils :: ";
+
 function startSSHAgent() {
 
-  if [ ! -S "${SSH_AUTH_SOCK}" ]; then
+  echo "SSH_AUTH_SOCK -- ${SSH_AUTH_SOCK}";
+  if [ -S "${SSH_AUTH_SOCK}" ]; then
+    echo -e "${PRETTY} Started 'ssh-agent' ...";
+  else
     echo -e "${PRETTY} Starting 'ssh-agent' because SSH_AUTH_SOCK='${SSH_AUTH_SOCK}'...";
     eval $(ssh-agent -s);
     echo -e "${PRETTY} Started 'ssh-agent' ...";
@@ -13,7 +18,7 @@ function AddSSHkeyToAgent() {
   local KEY_FILE="${1}";
   local PASS_PHRASE="${2}";
 
-  echo "PASS_PHRASE = '${PASS_PHRASE}', KEY_FILE = '${KEY_FILE}'";
+  # echo "PASS_PHRASE = '${PASS_PHRASE}', KEY_FILE = '${KEY_FILE}'";
 
   local KEY_PRESENT=$(ssh-add -l | grep -c ${KEY_FILE});
   if [[ "${KEY_PRESENT}" -gt "0" ]]; then

@@ -24,17 +24,17 @@ else
     | cut -d " " -f 2  \
     | cut -d ";" -f 1);
 
-echo -e "${PRTY} Preparing for owner: '${RDBMS_OWNER}'."  | tee -a ${LOG};
-sed -i "s|Owner: ubuntu|Owner: ${RDBMS_OWNER}|g" ${SEED_FILE};
-sed -i "s|OWNER TO ubuntu|OWNER TO ${RDBMS_OWNER}|g" ${SEED_FILE};
-sed -i "s|FROM ubuntu;|FROM ${RDBMS_OWNER};|g" ${SEED_FILE};
-sed -i "s|TO ubuntu;|TO ${RDBMS_OWNER};|g" ${SEED_FILE};
-sed -i "s|_ubuntu.js|_${RDBMS_OWNER}.js|g" ${SEED_FILE};
-grep ubuntu ${SEED_FILE};
-# grep ${RDBMS_OWNER} ${SEED_FILE};
+  echo -e "${PRTY} Preparing for owner: '${RDBMS_OWNER}'."  | tee -a ${LOG};
+  sed -i "s|Owner: ubuntu|Owner: ${RDBMS_OWNER}|g" ${SEED_FILE};
+  sed -i "s|OWNER TO ubuntu|OWNER TO ${RDBMS_OWNER}|g" ${SEED_FILE};
+  sed -i "s|FROM ubuntu;|FROM ${RDBMS_OWNER};|g" ${SEED_FILE};
+  sed -i "s|TO ubuntu;|TO ${RDBMS_OWNER};|g" ${SEED_FILE};
+  sed -i "s|_ubuntu.js|_${RDBMS_OWNER}.js|g" ${SEED_FILE};
+  grep ubuntu ${SEED_FILE};
+  # grep ${RDBMS_OWNER} ${SEED_FILE};
 
-# echo -e "---------------------------------------------------------------------";
-# exit;
+  # echo -e "---------------------------------------------------------------------";
+  # exit;
 
   echo -e "export PSQL=\"psql -h localhost -d ${RDBMS_DB}\"; SN = ${SCHEMA_NAME} SO = ${SCHEMA_OWNER} ";
   export PSQL="psql -h localhost -d ${RDBMS_DB}";

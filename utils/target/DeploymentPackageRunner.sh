@@ -150,25 +150,6 @@ echo -e "${PRTY} Testing secrets file availability... [   ls \"${TARGET_SECRETS_
 if [ ! -f "${TARGET_SECRETS_FILE}" ]; then errorNoSecretsFileSpecified "${TARGET_SECRETS_FILE}"; fi;
 source ${TARGET_SECRETS_FILE};
 
-# SERVICE_UID=${YOUR_ORG}_${YOUR_PKG};
-# SERVICE_PATH=${YOUR_ORG}/${YOUR_PKG};
-# PACKAGE_PATH=${SERVICE_PATH}${VERSION_PATH}${TIMESTAMP_PATH};
-
-# UNIT_FILE=${SERVICE_UID}.service;
-
-# SVC_DIR=/${DEPLOY_USER}/svc;
-
-# WORK_DIR=${SVC_DIR}/${YOUR_PKG};
-# META_DIR=${SVC_DIR}/${PACKAGE_PATH};
-# DNLD_DIR=/${DEPLOY_USER}/pkgs/${SERVICE_PATH};
-# NGINX_DIR=${SVC_DIR}/nginx;
-
-# USER_TOML_FILE="user.toml";
-# USER_TOML_FILE_PATH=${WORK_DIR}/${USER_TOML_FILE};
-# DIRECTOR_TOML_FILE=${SERVICE_UID}.toml;
-# DIRECTOR_TOML_FILE_PATH=${META_DIR}/${DIRECTOR_TOML_FILE};
-
-# NGINX_TOML_FILE_PATH=${NGINX_DIR}/${USER_TOML_FILE};
 
 which incrond >/dev/null || sudo -A DEBIAN_FRONTEND=noninteractive apt-get -y install incron;
 
@@ -177,38 +158,11 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
 
   source environment.sh;
 
-  # echo -e "${PRTY} Preparing 'user.toml' file for core/postgresql bundle; in '${SVC_DIR}/postgresql'." | tee -a ${LOG};
-  # declare POSTGRES_SERVICE="${SVC_DIR}/postgresql";
-  # sudo -A mkdir -p ${POSTGRES_SERVICE};
-  # sudo -A chown root:root ${POSTGRES_SERVICE};
-  # sudo -A chmod 755 ${POSTGRES_SERVICE};
-
-  # declare POSTGRES_USER_TOML="${POSTGRES_SERVICE}/user.toml";
-  # sudo -A touch ${POSTGRES_USER_TOML};
-  # sudo -A chown root:root ${POSTGRES_USER_TOML};
-  # sudo -A chmod 666 ${POSTGRES_USER_TOML};
-
-
-  # echo -e "${PRTY} Upserting super user pwd into core/postgresql '${POSTGRES_USER_TOML}' file." | tee -a ${LOG};
-  # export RDBMS_PWD=$(cat ./settings.json | jq -r .RDBMS_PWD);
   echo -e "
 
-
-                       ${RDBMS_PWD}
-
+                      ${RDBMS_DIALECT}
 
   ";
-  # declare EXISTING_SETTING="initdb_superuser_password";
-
-  # declare REPLACEMENT="${EXISTING_SETTING} = \"${RDBMS_PWD}\"";
-  # grep "${EXISTING_SETTING}" ${POSTGRES_USER_TOML} >/dev/null \
-  #          && sudo -A sed -i "s|.*${EXISTING_SETTING}.*|${REPLACEMENT}|" ${POSTGRES_USER_TOML} \
-  #          || echo ${REPLACEMENT} > ${POSTGRES_USER_TOML};
-  # sudo -A chmod 644 ${POSTGRES_USER_TOML};
-  # echo -e "-----------   ${POSTGRES_USER_TOML}   ------------------";
-  # cat ${POSTGRES_USER_TOML};
-  # echo -e "--------------------------------------------------
-  # ";
 
   echo -e "${PRTY} Stopping the Nginx systemd service, in case it's running . . ." | tee -a ${LOG};
   sudo -A systemctl stop nginx.service >> ${LOG} 2>&1;
@@ -649,13 +603,17 @@ popd >/dev/null;
 echo -e "${PRTY} Installing NodeJS..." | tee -a ${LOG};
 export NVM_LATEST=$(curl -s https://api.github.com/repos/creationix/nvm/releases/latest |   jq --raw-output '.tag_name';);  echo ${NVM_LATEST};
 wget -qO- https://raw.githubusercontent.com/creationix/nvm/${NVM_LATEST}/install.sh | bash;
-export NVM_DIR="$HOME/.nvm"
+export NVM_DIR="$HOME/.nvm";
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion";
 
 nvm install ${METEOR_NODE_VERSION};
-export NODE_HOME=$(which node);
-echo "NODE_HOME = ${NODE_HOME}";
+export NODE=$(which node);
+echo "NODE = ${NODE}";
+export NODE_DIR=${NODE%/bin/node};
+echo NODE_DIR=${NODE_DIR};
+chmod -R 755 $NODE_DIR/bin/*;
+sudo cp -r $NODE_DIR/{bin,lib,share} /usr/local/;
 
 declare SVC_NAME="meteor_node";
 declare SVC_FILE="${SVC_NAME}.service";
@@ -666,6 +624,34 @@ cat ${SVC_PATH};
 
 sudo -A cp ${SVC_PATH} /etc/systemd/system;
 sudo -A systemctl enable ${SVC_FILE};
+
+echo -e "${PRTY} Setting .npm-global";
+mkdir -p ~/.npm-global;
+npm config set prefix "~/.npm-global";
+
+export METEOR_NODE_FLAG="####  Meteor - Node zone";
+export FLAG_START="${METEOR_NODE_FLAG} : starts ####";
+export FLAG_END="${METEOR_NODE_FLAG} : ends ####";
+export BASH_PROFILE="${HOME}/.profile";
+export NPM_PREFIX="export PATH=~/.npm-global/bin:\$PATH;";
+touch ${BASH_PROFILE};
+
+echo -e "${PRTY} Patching .profile";
+export REPLACE_ZONE=$(grep -c "${NPM_PREFIX}" ${BASH_PROFILE});
+if [[ "${REPLACE_ZONE}" -lt 1 ]]; then
+  echo -e "${FLAG_START}\n${NPM_PREFIX}\n${FLAG_END}" >> ${BASH_PROFILE};
+else
+  echo -e "Previously configured"
+fi;
+source ${BASH_PROFILE};
+
+echo -e "${PRTY} Installing knex if not installed.";
+export INSTALL_KNEX=$(knex --version 2>/dev/null | grep -c "Knex CLI version");
+if [[ "${INSTALL_KNEX}" -lt 1 ]]; then
+  echo -e "Not found";
+  npm -gy install knex;
+fi;
+knex --version;
 
 echo -e "
 

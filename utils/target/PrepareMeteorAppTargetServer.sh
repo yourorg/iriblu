@@ -16,6 +16,9 @@ function initialSecurityTasks() {
   sudo -A ufw allow in https;
   sudo -A ufw allow out 53;
 
+  echo -e "ufw for MariaDB on VPN";
+  sudo -A ufw allow from 192.168.122.0/24 to any port 3306;
+
   echo -e "ufw for Postgres on VPN";
   sudo -A ufw allow from 192.168.122.0/24 to any port 5432;
 
@@ -136,7 +139,7 @@ pushd ${SCRIPTPATH};
   fi;
 
   echo -e "${PRTY} Installing MariaDB  . . . . . "  | tee -a ${LOG};
-  ./mariadb/installAndSecureMariaDB.sh;
+  ./mysql/installAndSecureMariaDB.sh;
 
   declare APT_SRC_LST="/etc/apt/sources.list.d";
 

@@ -2,7 +2,7 @@
 
 cat <<EOMDS
 [Service]
-ExecStart=${NODE_HOME} /home/${DEPLOY_USER}/${METEOR_NODE_APP_PATH}/main.js
+ExecStart=/usr/local/bin/node /home/${DEPLOY_USER}/${METEOR_NODE_APP_PATH}/main.js
 Restart=always
 StandardOutput=syslog
 StandardError=syslog
