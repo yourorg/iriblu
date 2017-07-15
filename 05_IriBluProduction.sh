@@ -42,57 +42,57 @@ sudo ls >/dev/null;
 
 pushd ../${pkg_name} &>/dev/null;
 
-#   echo -e "${PRTY} install '${pkg_name}' project ..."
-#   .scripts/preFlightCheck.sh;
+  echo -e "${PRTY} install '${pkg_name}' project ..."
+  .scripts/preFlightCheck.sh;
   . ${HOME}/.userVars.sh;
 
-  # source .scripts/android/installAndBuildTools.sh;
-  # echo -e "${PRTY} Preparing To Build AndroidAPK";
-  # PrepareToBuildAndroidAPK;
+  source .scripts/android/installAndBuildTools.sh;
+  echo -e "${PRTY} Preparing To Build AndroidAPK";
+  PrepareToBuildAndroidAPK;
 
-  # rm -fr ./node_modules;
-  # rm -fr ./.meteor/local;
-  # mkdir -p ./node_modules;
+  rm -fr ./node_modules;
+  rm -fr ./.meteor/local;
+  mkdir -p ./node_modules;
 
-  # pushd ./.pkgs &>/dev/null;
-  #   pushd ./gitignored_mmks_book &>/dev/null;
-  #     rm -fr dist;
-  #     rm -fr node_modules;
-  #     meteor npm install
-  #    popd &>/dev/null;
+  pushd ./.pkgs &>/dev/null;
+    pushd ./gitignored_mmks_book &>/dev/null;
+      rm -fr dist;
+      rm -fr node_modules;
+      meteor npm install
+     popd &>/dev/null;
 
-  #   pushd ./gitignored_mmks_layout/ &>/dev/null;
-  #     rm -fr dist;
-  #     rm -fr node_modules;
-  #     meteor npm install
-  #   popd &>/dev/null;
+    pushd ./gitignored_mmks_layout/ &>/dev/null;
+      rm -fr dist;
+      rm -fr node_modules;
+      meteor npm install
+    popd &>/dev/null;
 
-  #   pushd ./mmks_widget/ &>/dev/null;
-  #     rm -fr dist;
-  #     rm -fr node_modules;
-  #     meteor npm install
-  #   popd &>/dev/null;
+    pushd ./mmks_widget/ &>/dev/null;
+      rm -fr dist;
+      rm -fr node_modules;
+      meteor npm install
+    popd &>/dev/null;
 
-  #   cp -r ./gitignored_mmks_book ../node_modules/mmks_book;
-  #   cp -r ./gitignored_mmks_layout/ ../node_modules/mmks_layout;
-  #   cp -r ./mmks_widget/ ../node_modules/mmks_widget;
+    cp -r ./gitignored_mmks_book ../node_modules/mmks_book;
+    cp -r ./gitignored_mmks_layout/ ../node_modules/mmks_layout;
+    cp -r ./mmks_widget/ ../node_modules/mmks_widget;
 
-  # popd &>/dev/null;
+  popd &>/dev/null;
 
-  # meteor npm install;
+  meteor npm install;
 
-  # echo -e "${PRTY} Building AndroidAPK as ${APP_NAME}";
-  # BuildAndroidAPK;
+  echo -e "${PRTY} Building AndroidAPK as ${APP_NAME}";
+  BuildAndroidAPK;
 
-  # echo -e "${PRTY} Renaming APK.";
-  # pushd public/mobile/android >/dev/null;
-  #   rm -f mmks.apk.txt;
-  #   mv IriBluBuilt.apk mmks.apk;
-  #   mv IriBluBuilt.apk.txt mmks.apk.txt;
-  # popd >/dev/null;
+  echo -e "${PRTY} Renaming APK.";
+  pushd public/mobile/android >/dev/null;
+    rm -f mmks.apk.txt;
+    mv IriBluBuilt.apk mmks.apk;
+    mv IriBluBuilt.apk.txt mmks.apk.txt;
+  popd >/dev/null;
 
-  # echo -e "${PRTY} Building '${APP_NAME}' server bundle with embedded 'apk' in ${BUILD_TARGET_DIR}.";
-  # meteor build ${BUILD_TARGET_DIR} --server-only --directory;
+  echo -e "${PRTY} Building '${APP_NAME}' server bundle with embedded 'apk' in ${BUILD_TARGET_DIR}.";
+  meteor build ${BUILD_TARGET_DIR} --server-only --directory;
 
   echo -e "${PRTY} Secure CoPying '${APP_NAME}' server bundle as '${pkg_name}.tar.gz'.";
   pushd ${BUILD_TARGET_DIR} >/dev/null;
