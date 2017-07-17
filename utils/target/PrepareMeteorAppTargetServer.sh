@@ -80,7 +80,7 @@ pushd ${SCRIPTPATH};
 
   source ${ENVIRONMENT};
 
-  export DEPLOY_USER="${DEPLOY_USER:-iriman}";
+  export DEPLOY_USER="${DEPLOY_USER:-meta}";
   # DEPLOY_USER_PWD=$(cat ./HabUserPwd.txt);
 
   DEPLOY_DIR=/home/${DEPLOY_USER};

@@ -7,7 +7,7 @@ export DEBIAN_FRONTEND="noninteractive";
 
 
 export TMP="/dev/shm/tmp.tmp";
-# export SCTS="../iriman/DeploymentPkgInstallerScripts/secrets/secrets.sh";
+# export SCTS="../meta/DeploymentPkgInstallerScripts/secrets/secrets.sh";
 export SCTS="./secrets/secrets.sh";
 touch ${TMP}; chmod go-rxw ${TMP}; sudo -A cat ${SCTS} > ${TMP}; source ${TMP}; rm -fr ${TMP};
 # echo "RDBMS_ADMIN_PWD = ${RDBMS_ADMIN_PWD} ";
@@ -22,8 +22,12 @@ echo -e "${PRTY} Obtaining dependencies .............>";
 sudo -A apt-get install -y software-properties-common;
 sudo -A apt-get install -y debconf-utils;
 
-sudo -A apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8;
-sudo -A add-apt-repository "deb http://mariadb.mirror.colo-serv.net/repo/${MARIADB_VERSION=}/ubuntu $(lsb_release -sc) main";
+export MARIADB_SIGNING_KEY=$( \
+   [[ "$(lsb_release -sr)" < "16.04" ]] && echo "0xcbcb082a1bb943db" || echo "0xF1656F24C74CD1D8" \
+);
+echo -e "${PRTY} MARIADB_SIGNING_KEY :: ${MARIADB_SIGNING_KEY}";
+sudo -A apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 ${MARIADB_SIGNING_KEY};
+sudo -A add-apt-repository "deb http://mirror.one.com/mariadb/repo/${MARIADB_VERSION}/ubuntu $(lsb_release -sc) main";
 
 sudo -A apt-get -y update;
 sudo -A apt-get -y upgrade;

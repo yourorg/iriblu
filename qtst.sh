@@ -2,7 +2,7 @@
 #
 PRTY="\n  ==> Qik Tst::";
 export SETUP_USER_UID="you";
-export DEPLOY_USER="iriman";
+export DEPLOY_USER="meta";
 export TARGET_SRVR="irid.blue";
 
 echo -e "${PRTY} Set up SSH...";

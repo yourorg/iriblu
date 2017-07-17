@@ -8,7 +8,7 @@ export YOUR_TARGET_SRVR_SSH_KEY_FILE="${SSH_PATH}/id_rsa";
 
 export SSH_CONF_FILE="${SSH_PATH}/config";
 
-export DEPLOY_USER="iriman";
+export DEPLOY_USER="meta";
 export BUNDLE_DIRECTORY_NAME="DeploymentPkgInstallerScripts";
 export APP_DIRECTORY_NAME="MeteorApp";
 

@@ -73,34 +73,54 @@ LETSENCRYPT_ACCTS="${LETSENCRYPT_HOME}/accounts/acme-v01.api.letsencrypt.org/dir
 
 function obtainLetsEncryptSSLCertificate() {
 
-  echo -e "${PRTY} Preparing CertBot (Let's Encrypt) config file '${LETSENCRYPT_HOME}/cli.ini'
+  echo -e "${PRTY}
+
+
+  Preparing CertBot (Let's Encrypt) config file '${LETSENCRYPT_HOME}/cli.ini'
                   using '${SCRIPTPATH}/cli.ini.template.sh'
-  -------------  ${LETSENCRYPT_HOME}/cli.ini  ---------------";
+  -------------  ${LETSENCRYPT_HOME}/cli.ini  ---------------
+
+  ";
   sudo -A mkdir -p ${LETSENCRYPT_HOME};
   sudo -A rm -fr ${LETSENCRYPT_HOME}/cli.ini;
 
   sh ${SCRIPTPATH}/cli.ini.template.sh | sudo -A tee ${LETSENCRYPT_HOME}/cli.ini;
-  echo -e "--------------------------------------------------
+  echo -e "
+    Generated  '${LETSENCRYPT_HOME}/cli.ini' from template.
+  --------------------------------------------------
+  ";
+
+  sudo -A cp ${SCRIPTPATH}/secrets/dh/dhparams_4096.pem /etc/ssl/private;
+  echo -e "
+    Installed Diffie-Helman parameters.
+  --------------------------------------------------
   ";
 
   export REQUEST_CERT="NO";
   export LETSENCRYPT_ACCT_NUM=""; # $(cat ${LETSENCRYPT_RENEWAL}/reciprocal.trade.conf | grep account | sed -n "/account = /s/account = //p")
   export LETSENCRYPT_CREATION_DATE=""; # $(cat ${LETSENCRYPT_ACCTS}/${LETSENCRYPT_ACCT_NUM}/meta.json | jq -r .creation_dt)
-  if [[ -f ${LETSENCRYPT_RENEWAL}/${VIRTUAL_HOST_DOMAIN_NAME}.conf ]]; then
-    LETSENCRYPT_ACCT_NUM=$(cat ${LETSENCRYPT_RENEWAL}/${VIRTUAL_HOST_DOMAIN_NAME}.conf | grep account | sed -n "/account = /s/account = //p");
-    LETSENCRYPT_CREATION_DATE=$(sudo -A cat ${LETSENCRYPT_ACCTS}/${LETSENCRYPT_ACCT_NUM}/meta.json | jq -r .creation_dt);
-    # echo ${LETSENCRYPT_CREATION_DATE};
-    RENEWAL_DELAY=80;
-    export EXPIRY_CLOSE=$(date "+%F" -d "${LETSENCRYPT_CREATION_DATE}+${RENEWAL_DELAY} days"); # echo ${EXPIRY_CLOSE};
-    export TODAY=$(date "+%F"); # echo ${TODAY};
-    if [[ ${TODAY} > ${EXPIRY_CLOSE} ]]; then
-      echo -e "${TODAY} is more than ${RENEWAL_DELAY} days since ${LETSENCRYPT_CREATION_DATE}, when the certificate was issued.";
-      REQUEST_CERT="YES";
-    else
-      echo -e "Today, ${TODAY} is before certificate expiry, ${EXPIRY_CLOSE}.  Renewal not required";
+
+  echo -e "Have renewal directoy?";
+  if [[ -d ${LETSENCRYPT_RENEWAL} ]]; then
+    echo -e "Yes. Have renewal config file?";
+    if [[ -f ${LETSENCRYPT_RENEWAL}/${VIRTUAL_HOST_DOMAIN_NAME}.conf ]]; then
+      echo -e "Yes. Check renewal schedule.";
+      LETSENCRYPT_ACCT_NUM=$(cat ${LETSENCRYPT_RENEWAL}/${VIRTUAL_HOST_DOMAIN_NAME}.conf | grep account | sed -n "/account = /s/account = //p");
+      LETSENCRYPT_CREATION_DATE=$(sudo -A cat ${LETSENCRYPT_ACCTS}/${LETSENCRYPT_ACCT_NUM}/meta.json | jq -r .creation_dt);
+      # echo ${LETSENCRYPT_CREATION_DATE};
+      RENEWAL_DELAY=80;
+      export EXPIRY_CLOSE=$(date "+%F" -d "${LETSENCRYPT_CREATION_DATE}+${RENEWAL_DELAY} days"); # echo ${EXPIRY_CLOSE};
+      export TODAY=$(date "+%F"); # echo ${TODAY};
+      if [[ ${TODAY} > ${EXPIRY_CLOSE} ]]; then
+        echo -e "${TODAY} is more than ${RENEWAL_DELAY} days since ${LETSENCRYPT_CREATION_DATE}, when the certificate was issued.";
+        REQUEST_CERT="YES";
+      else
+        echo -e "Today, ${TODAY} is before certificate expiry, ${EXPIRY_CLOSE}.  Renewal not required";
+      fi;
     fi;
   else
-    echo -e "install it;"
+    echo -e "Ready to install . . .";
+    REQUEST_CERT="YES";
   fi;
 
   if [[  "${REQUEST_CERT}" = "YES" ]]; then
@@ -164,12 +184,13 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
 
   ";
 
-  echo -e "${PRTY} Stopping the Nginx systemd service, in case it's running . . ." | tee -a ${LOG};
+  echo -e "${PRTY}
+  Stopping the Nginx systemd service, in case it's running . . ." | tee -a ${LOG};
   sudo -A systemctl stop nginx.service >> ${LOG} 2>&1;
 
   prepareNginxVHostDirectories;
 
-  if [[  "A" = "A" ]]; then
+  if [[ -f letsencrypt.tar.gz ]]; then
     echo -e "${PRTY}
             # # # Skipping formal SSL certificate installation for now # # #
 Extracting $(pwd)/letsencrypt.tar.gz to /etc .....
@@ -177,8 +198,8 @@ Extracting $(pwd)/letsencrypt.tar.gz to /etc .....
     sudo -A tar zxvf letsencrypt.tar.gz -C /;
     sudo -A cp ./secrets/dh/*.pem /etc/ssl/private;
   else
-    echo -e " # # # Obtaining SSL certificates for now # # #  ";
-    #obtainLetsEncryptSSLCertificate;
+    echo -e " # # # Obtaining SSL certificates for '${VIRTUAL_HOST_DOMAIN_NAME}' # # #  ";
+    obtainLetsEncryptSSLCertificate;
   fi;
 
   echo -e "${PRTY} Substituting Nginx configuration file ." | tee -a ${LOG};
@@ -313,7 +334,7 @@ EOFM
   # echo "export SECRETS_DIR=${VHDN}_SECRETS;";
   # eval "export SECRETS_DIR=\${${VHDN}_SECRETS};";
   export SECRETS_DIR="secrets";
-  export DEPLOY_USER="${DEPLOY_USER:-iriman}";
+  export DEPLOY_USER="${DEPLOY_USER:-meta}";
 
   echo SECRETS_DIR=${SECRETS_DIR};
   echo SECRETS=${SECRETS};

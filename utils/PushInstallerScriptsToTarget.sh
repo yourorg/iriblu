@@ -289,11 +289,18 @@ mkdir -p ${BUNDLED_SECRETS};
 cp -rp ./target/* ${BUNDLE_DIRECTORY};
 
 source ${ENVIRONMENT};
+
+export LETS_ENCYPT="${HOME}/.ssh/deploy_vault/${VIRTUAL_HOST_DOMAIN_NAME}/letsencrypt.tar.gz";
 pushd ${BUNDLING_DIRECTORY} >/dev/null;
   pushd ${BUNDLE_DIRECTORY} >/dev/null;
 
     cp -p ${ENVIRONMENT} .;
-    cp ${HOME}/.ssh/deploy_vault/${VIRTUAL_HOST_DOMAIN_NAME}/letsencrypt.tar.gz .;
+    if [[  -f ${LETS_ENCYPT}  ]]; then
+      echo -e "${PRTY} Pushing 'letsencrypt' bundle.";
+      cp ${LETS_ENCYPT} .;
+    else
+      echo -e "${PRTY} Found NO 'letsencrypt' bundle for '${VIRTUAL_HOST_DOMAIN_NAME}'.";
+    fi;
 
     chmod 770 ${SOURCE_SECRETS_DIR};
     cp -pr ${SOURCE_SECRETS_DIR}/. ${BUNDLED_SECRETS};

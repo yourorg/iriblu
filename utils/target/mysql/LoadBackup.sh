@@ -9,11 +9,11 @@ if [[ -z ${RDBMS_BKP} ]]; then
 else
 
   declare SEED_FILE="pgres_seed.sql";
-  echo -e "${PRTY} Downloading and restoring PostgreSQL seed from URL ...
+  echo -e "${PRTY} Downloading and restoring MariaDB seed from URL ...
                      ${RDBMS_BKP}
        ... to have internal standard name '${SEED_FILE}'"  | tee -a ${LOG};
 
-  curl -sz ${SEED_FILE} -L -o ${SEED_FILE} ${RDBMS_BKP};
+  curl -sLo ${SEED_FILE} ${RDBMS_BKP};
 
   echo -e "${PRTY} Have seed file, '$(stat -c "%n %s bytes" ${SEED_FILE})'."  | tee -a ${LOG};
 
