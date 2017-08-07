@@ -20,10 +20,28 @@ AddSSHkeyToAgent ${VHOST_SECRETS_DIR}/deploy_user/id_rsa ${DEPLOY_USER_SSH_PASS_
 export TARGET_SRVR="irid.blue";
 echo "TARGET_SRVR -- ${TARGET_SRVR}";
 
+export SHELL_TESTS="../utils/shell";
+
+echo -e "  Copying ...";
+scp -r ${SHELL_TESTS}/* ${DEPLOY_USER}@${TARGET_SRVR}:/home/${DEPLOY_USER}/shellTests;
+
+echo -e "  Running ...";
+# ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login; cd shellTests; node --version;";
+# exit
+ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login; cd shellTests; node example.js;";
+
+echo -e "  Testing ...";
+ssh ${DEPLOY_USER}@${TARGET_SRVR} "cd shellTests; diff tbPartners.js tbPartners.txt;";
+
+
+exit;
+
+
+
 pushd ../utils/target >/dev/null;
 
   echo -e "  Copying ...";
-  scp -r ./knex ${DEPLOY_USER}@${TARGET_SRVR}:/home/${DEPLOY_USER}/DeploymentPkgInstallerScripts;
+  scp ./knex ${DEPLOY_USER}@${TARGET_SRVR}:/home/${DEPLOY_USER}/DeploymentPkgInstallerScripts;
 
   echo -e "  Testing ...";
   ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && ./DeploymentPkgInstallerScripts/knex/qtst.sh;";

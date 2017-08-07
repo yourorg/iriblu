@@ -4,8 +4,43 @@ declare PRETTY="~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nIRIBLU Initialize :: ";
 
 sudo ls >/dev/null;
 
-echo -e "${PRETTY} purge 'mmks' ...";
-rm -fr mmks;
+echo -e "${PRETTY} prepare NodeJS versions ...";
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+export INSTALL="jq";
+dpkg-query -s ${INSTALL} >/dev/null && echo " - ${INSTALL} is installed" || sudo apt-get install -y ${INSTALL};
+
+export PURGE="nodejs";
+dpkg-query -s ${PURGE} &>/dev/null && sudo apt-get purge -y ${PURGE} || echo " - ${PURGE} has been purged";
+
+export NVM_VERSION=$(curl -s https://api.github.com/repos/creationix/nvm/releases/latest | jq -r ".name");
+export NVM_INSTALLED=$(nvm --version);
+if [[  "${NVM_VERSION}" = "v${NVM_INSTALLED}"  ]]; then
+  echo -e " - nvm '${NVM_VERSION}' is installed";
+else
+  echo -e " - freshen nvm '${NVM_VERSION}'";
+  wget -qO- https://raw.githubusercontent.com/creationix/nvm/${NVM_VERSION}/install.sh | bash;
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+fi;
+
+export NODE_VERSION=4;
+nvm ls ${NODE_VERSION} >/dev/null \
+  && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
+  || nvm install ${NODE_VERSION};
+
+export NODE_VERSION=6;
+nvm ls ${NODE_VERSION} >/dev/null \
+  && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
+  || nvm install ${NODE_VERSION};
+
+exit;
+
+
+echo -e "${PRETTY} Prepare 'mmks' ...";
+# rm -fr mmks;
 
 if [[ ! -d ../mmks ]]; then
   echo "../mmks not found. Cloning into parent directory.";

@@ -79,7 +79,7 @@ echo -e "\n${PRTY} Changing working location to ${SCRIPTPATH}."  | tee -a ${LOG}
 pushd ${SCRIPTPATH};
 
   source ${ENVIRONMENT};
-
+  source ./secrets/secrets.sh
   export DEPLOY_USER="${DEPLOY_USER:-meta}";
   # DEPLOY_USER_PWD=$(cat ./HabUserPwd.txt);
 

@@ -334,7 +334,7 @@ EOFM
   # echo "export SECRETS_DIR=${VHDN}_SECRETS;";
   # eval "export SECRETS_DIR=\${${VHDN}_SECRETS};";
   export SECRETS_DIR="secrets";
-  export DEPLOY_USER="${DEPLOY_USER:-meta}";
+  export DEPLOY_USER="${DEPLOY_USER:-hoRroR_1}";
 
   echo SECRETS_DIR=${SECRETS_DIR};
   echo SECRETS=${SECRETS};
