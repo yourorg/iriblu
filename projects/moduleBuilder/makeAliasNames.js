@@ -1,23 +1,5 @@
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
-
-var camelize = str =>
-  str
-  .replace(
-    /(?:^\w|[A-Z]|\b\w)/g,
-    (letter, index) => {
-      return index === 0 ? letter.toLowerCase() : letter.toUpperCase();
-    })
-  .replace(/\s+/g, '');
-
-var titleCase = str =>
-  str
-  .replace(
-    /(?:^\w|[A-Z]|\b\w)/g,
-    letter => letter.toUpperCase()
-  );
-
-var spacedLower = text => text.replace(/_/g , ' ');
-var noWhite = text => text.replace(/ /g , '');
+const { camelize, titleCase, spacedLower, noWhite } = require('./utils');
 
 module.exports = function (project) {
 
@@ -34,7 +16,7 @@ module.exports = function (project) {
     rec = model;
     rec.name = table.name;
     rec.alias = table.alias;
-//    LG( 'typeof table.alias', typeof table.alias);
+//    LG( 'typeof table.alias ', typeof table.alias);
     rec.alias = (
       typeof table.alias === 'string' ) ?
       {

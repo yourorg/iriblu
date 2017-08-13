@@ -13,6 +13,7 @@ const knexConfig = {
   }
 };
 
+/* eslint-disable camelcase */
 const sourceTables = [
   {
     name: 'tb_batch',
@@ -56,6 +57,24 @@ const sourceTables = [
       u: 'DeliveryItem',
       tl: 'delivery item',
       tu: 'Delivery Item'
+    },
+    sequelize: {
+      attributeNameMap: {
+        entrega_lines_id: 'idDeliveryItem',
+        entrega_id: 'fkDelivery'
+      }
+    },
+    typeDef: {
+      queries: {
+        note: 'The items of the delivery note "entrega_id"',
+        noteCols: [ 1, 2, 3, 4 ],
+        cols: [ 1, 2, 3, 4 ],
+      },
+      mutations: {
+        colsCreate: 'The items of the delivery note "entrega_id"',
+        colsUpdate: [ 1, 2, 3, 4 ],
+      },
+      types: ''
     }
   },
   {
@@ -206,6 +225,8 @@ const sourceTables = [
     alias: 'water_price',
   },
 ];
+/* eslint-enable camelcase */
+
 
 module.exports = {
   rdbmsConfig: knexConfig,

@@ -1,11 +1,21 @@
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
 
-const tmplt = require('./sequelizeModelTemplate').default;
+const tmplt = require('./typeDefsTemplate').default;
 const fs = require('fs');
 
 module.exports = function ( args ) {
   const model = args.values.settings.module;
   const config = args.values.settings.config;
+  // LG(' ----------  Starting  ------------- ');
+  // LG( tmplt );
+
+  // LG( args );
+  // LG(' ---------- ');
+  // LG( model );
+  // LG(' ---------- ');
+  // LG( config );
+  // LG(' ---------- ');
+  // LG('  ---- Write to ', args.destination + '/' + args.file);
 
   const knex = require('knex')(config.rdbmsConfig);
   // const targetDir = '../target/' + config.subdirectory + '/server/model';
@@ -24,27 +34,30 @@ module.exports = function ( args ) {
       'extra'
     ])
     .where('table_schema', 'meteor_data')
-    .andWhere('table_name', model.name);
+    .andWhere('table_name', model.name)
+    .orderBy('ordinal_position', 'asc');
 
   const target = args.destination + '/' + args.file;
 
   promise
   .then(function (values) {
 
-    LG(' --- Preparing Sequelize Models ----- : ', model.alias.u);
-    // // LG( values  );
-    // LG(' ------------------------- ');
-    // LG( tmplt(values, model) );
+    LG(' --- Preparing Type Definitions :: ', model.alias.u);
+    LG( values  );
+    LG(' <<------------------------- >> ');
+//    LG( tmplt(values, model) );
+    // tmplt(values, model);
 
-    // LG(' ---------- Writing to :: ', target);
+    LG(' ---------- Writing to :: ', target);
     fs.writeFile(
       target,
       tmplt(values, model),
       function (err) {
         if(err) {
+          LG(' ----- * * NOT Written * * ---- ');
           return LG(err);
         }
-//        LG(' ---------- Sequelize Models Written  ------------ \n\n\n\n\n\n');
+        LG(' ---------- Type Definitions Written  ------------ ');
         process.exit();
       }
     );

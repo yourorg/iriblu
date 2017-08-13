@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 #
 PRTY="\n  ==> Qik Tst::";
+echo -e "${PRTY} Curl calls to graphiql ...";
+
+curl -sH "Content-Type: application/json" -X POST \
+  -d '{ "query": "query { getDeliveryItem(itemId: 44) { itemId, fkDelivery, code, createdAt } }" }' \
+  http://localhost:3000/graphql \
+  | jq .data ;
+
+
+#  -d '{ "query": "query {   book(_id: 60) { _id, title                          } }" }' \
+#  -d '{ "query": "query { getDeliveryItem(itemId: 44) { itemId, fkDelivery, code, createdAt } }" }' \
+
+
+
+exit;
+
 export SETUP_USER_UID="you";
 export DEPLOY_USER="meta";
 export TARGET_SRVR="irid.blue";
@@ -27,3 +42,4 @@ echo -e "
 
 ssh ${DEPLOY_USER}@${TARGET_SRVR} \". ~/.bash_login && ~/DeploymentPkgInstallerScripts/DeploymentPackageRunner.sh\";"
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && ~/DeploymentPkgInstallerScripts/DeploymentPackageRunner.sh";
+

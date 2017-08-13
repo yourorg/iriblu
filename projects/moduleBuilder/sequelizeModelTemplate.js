@@ -1,45 +1,38 @@
 'use strict';
+// const { camelize, titleCase, spacedLower, noWhite } = require('./utils');
+const { mapDataType, mapSubstitution } = require('./utils');
 
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
 
-function camelize(str) {
-  return str
-    .replace(/_+/g, ' ')
-    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
-      return index === 0 ? letter.toLowerCase() : letter.toUpperCase();
-    })
-    .replace(/\s+/g, '');
-}
+// var mapPartialReplace = {
+//   int: 'DataTypes.INTEGER',
+//   varchar: 'DataTypes.STRING',
+//   char: 'DataTypes.CHAR',
+//   datetime: 'DataTypes.DATE',
+// };
 
-var mapPartialReplace = {
-  int: 'DataTypes.INTEGER',
-  varchar: 'DataTypes.STRING',
-  char: 'DataTypes.CHAR',
-  datetime: 'DataTypes.DATE',
-};
+// var mapFullReplace = {
+//   timestamp: `'TIMESTAMP'`,
+// };
 
-var mapFullReplace = {
-  timestamp: 'TIMESTAMP',
-};
+// function mapDataType(aType) {
+//   var rgx = '';
+//   rgx = aType
+//   .replace(/(?:[A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
+//     // LG( 'index : ' + index + ', match : ' + match );
+//     return mapPartialReplace[match];
+//   });
+//   // LG( ' GOT "%s".', rgx );
+//   if ( rgx === 'undefined' ) {
 
-function mapType(aType) {
-  var rgx = '';
-  rgx = aType
-  .replace(/(?:[A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
-    LG( 'index : ' + index + ', match : ' + match );
-    return mapPartialReplace[match];
-  });
-  LG( ' GOT "%s".', rgx );
-  if ( rgx === 'undefined' ) {
-
-    rgx = aType
-    .replace(/([A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
-      LG( 'index : ' + index + ', match : ' + match );
-      return mapFullReplace[match];
-    });
-  }
-  return rgx;
-}
+//     rgx = aType
+//     .replace(/([A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
+//       // LG( 'index : ' + index + ', match : ' + match );
+//       return mapFullReplace[match];
+//     });
+//   }
+//   return rgx;
+// }
 
 function htmlEscape(str) {
   return str.replace(/&/g, '&amp;') // first!
@@ -50,7 +43,7 @@ function htmlEscape(str) {
             .replace(/`/g, '&#96;');
 }
 
-function html(templateObject, ...substitutions) {
+function xfrm(templateObject, ...substitutions) {
 
   // Use raw template strings: we don’t want
   // backslashes (\n etc.) to be interpreted
@@ -62,7 +55,9 @@ function html(templateObject, ...substitutions) {
     // Retrieve the template string preceding
     // the current substitution
     let lit = raw[i];
+//    LG('   lit -- ', raw[i]);
     let subst = substitution;
+//    LG(' subst -- ', subst);
     // console.log(" lit ", lit)
 
     // In the example, map() returns an Array:
@@ -87,23 +82,28 @@ function html(templateObject, ...substitutions) {
   return result;
 }
 
+// function mapSubstitute( val, map ) {
+//   var ret = map[val];
+//   if ( typeof ret === 'undefined' ) { return val; }
+//   return ret;
+// }
+
 /* eslint-disable max-len */
-const tmpl = addrs =>
-  html`${addrs.map(addr =>
-html`
-    !${camelize(addr.column_name)}: {
-      type: !${mapType(addr.column_type)},
+const modelAttributeTemplate = (addrs, mods) =>
+  xfrm`${addrs.map(addr =>
+xfrm`
+    ${mapSubstitution( addr.column_name, mods.sequelize.attributeNameMap )}: {
+      type: ${mapDataType(addr.column_type)},
       allowNull: !${addr.is_nullable === 'NO' ? 'false' : 'true'},!${addr.column_key === 'PRI' ? '\n      primaryKey: true,' : ''}!${addr.extra ? addr.extra.match('auto_increment') ? '\n      autoIncrement: true,' : '' : ''}
       field: '!${addr.column_name}',
     },`)}`;
 /* eslint-enable max-len */
 
-exports.default = function ( data, mods ) {
-
+function sequelizeModelTemplate( data, mods ) {
   const sequelizeModel = `/* jshint indent: 2 */
 
 module.exports = function (sequelize, DataTypes) {
-  return sequelize.define('tb${mods.alias.u}', {${tmpl(data)}
+  return sequelize.define('tb${mods.alias.u}', {${modelAttributeTemplate(data, mods)}
   }, {
     timestamps: false,
     tableName: '${data[0].table_name}'
@@ -112,4 +112,6 @@ module.exports = function (sequelize, DataTypes) {
 `;
 
   return sequelizeModel;
-};
+}
+
+exports.default = sequelizeModelTemplate;

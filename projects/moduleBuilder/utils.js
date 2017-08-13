@@ -30,7 +30,7 @@ const transform = parms => {
         render(tmplt, data),
         function (errW) {
           if (errW) { throw errW; }
-          LG('Written to "%s"', destination);
+          // LG('Written to "%s"', destination);
         });
     });
 };
@@ -45,8 +45,123 @@ const test = () => {
   return 'Trying ... ';
 };
 
+const camelize = str =>
+  str
+  .replace(
+    /(?:^\w|[A-Z]|\b\w)/g,
+    (letter, index) => {
+      return index === 0 ? letter.toLowerCase() : letter.toUpperCase();
+    })
+  .replace(/\s+/g, '');
+
+const titleCase = str =>
+  str
+  .replace(
+    /(?:^\w|[A-Z]|\b\w)/g,
+    letter => letter.toUpperCase()
+  );
+
+const spacedLower = text => text.replace(/_/g , ' ');
+const noWhite = text => text.replace(/ /g , '');
+
+function htmlEscape(str) {
+  return str.replace(/&/g, '&amp;') // first!
+            .replace(/>/g, '&gt;')
+            .replace(/</g, '&lt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/`/g, '&#96;');
+}
+
+function substitute(templateObject, ...substitutions) {
+
+  // Use raw template strings: we don’t want
+  // backslashes (\n etc.) to be interpreted
+  const raw = templateObject.raw;
+
+  let result = '';
+
+  substitutions.forEach((substitution, i) => {
+    // Retrieve the template string preceding
+    // the current substitution
+    let lit = raw[i];
+    // LG('   lit -- ', raw[i]);
+    let subst = substitution;
+    // LG(' subst -- ', subst);
+
+    // In the example, map() returns an Array:
+    // If `subst` is an Array (and not a string),
+    // we turn it into a string
+    if (Array.isArray(subst)) {
+      subst = subst.join('');
+    }
+
+    // If the substitution is preceded by an exclamation
+    // mark, we escape special characters in it
+    if (lit.endsWith('!')) {
+      subst = htmlEscape(subst);
+      lit = lit.slice(0, -1);
+    }
+    result += lit;
+    result += subst;
+  });
+  // Take care of last template string
+  result += raw[raw.length - 1]; // (A)
+
+  return result;
+}
+
+
+var mapPartialReplace = {
+  int: 'DataTypes.INTEGER',
+  varchar: 'DataTypes.STRING',
+  char: 'DataTypes.CHAR',
+  datetime: 'DataTypes.DATE',
+};
+
+var mapFullReplace = {
+  timestamp: `'TIMESTAMP'`,
+};
+
+function mapDataType(aType) {
+  var rgx = '';
+  rgx = aType
+  .replace(/(?:[A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
+    // LG( 'index : ' + index + ', match : ' + match );
+    return mapPartialReplace[match];
+  });
+  // LG( ' GOT "%s".', rgx );
+  if ( rgx === 'undefined' ) {
+
+    rgx = aType
+    .replace(/([A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
+      // LG( 'index : ' + index + ', match : ' + match );
+      return mapFullReplace[match];
+    });
+  }
+  return rgx;
+}
+
+const getPrimaryKeyColumn = attributes => attributes
+  .filter( attribute => attribute.column_key === 'PRI')[0].column_name;
+
+function mapSubstitution( val, map ) {
+  var ret = map[val];
+  if ( typeof ret === 'undefined' ) { return val; }
+  return ret;
+}
+
+
 module.exports = {
   transform,
+  substitute,
+  camelize,
+  titleCase,
+  spacedLower,
+  noWhite,
+  mapDataType,
+  mapSubstitution,
+  getPrimaryKeyColumn,
   test
 };
 

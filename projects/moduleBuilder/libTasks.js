@@ -1,5 +1,6 @@
 const transform = require('./utils').transform;
 const shell = require('shelljs');
+const deftyp = require('./defineTypes');
 
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
 const Task = 'Lib';
@@ -34,10 +35,12 @@ module.exports = function (settings) {
 
 // -----------------------------------------------------
   parameters.file = 'typeDefs.js';
-  LG('   - Prepare and copy %s.',
-    parameters.file
+  LG('   - Generate type definitions : "%s".',
+    parameters.file,
+    parameters.destination
   );
-  transform(parameters);
+  deftyp(parameters);
+  // transform(parameters);
 
 // -----------------------------------------------------
   parameters.file = 'unit.js';
