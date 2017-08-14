@@ -1,12 +1,12 @@
 import rslvrs from './resolvers';
-import tsts from './unit';
+import tests from './unit';
+import migr from './migration';
+import ${settings.module.alias.u} from './attach';
 
 export default {
   moduleName: '${settings.module.alias.c}',
-  resolvers: function resolvers() {
-    return rslvrs;
-  },
-  tests: function tests() {
-    return tsts;
-  },
+  model: ${settings.module.alias.u},
+  migration: migr,
+  resolvers: () => rslvrs,
+  tests: () => tests,
 };

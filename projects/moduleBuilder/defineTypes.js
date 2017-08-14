@@ -40,33 +40,33 @@ module.exports = function ( args ) {
   const target = args.destination + '/' + args.file;
 
   promise
-  .then(function (values) {
+  .then(function (aTable) {
 
-    LG(' --- Preparing Type Definitions :: ', model.alias.u);
-    LG( values  );
-    LG(' <<------------------------- >> ');
-//    LG( tmplt(values, model) );
-    // tmplt(values, model);
+    // LG(' --- Preparing Type Definitions :: ', model.alias.u);
+    // LG( aTable );
+    // LG(' <<-------------------------- >> ');
+    // LG( tmplt(aTable, model) );
+    // tmplt(aTable, model);
 
-    LG(' ---------- Writing to :: ', target);
+    // LG(' ---------- Writing to :: ', target);
     fs.writeFile(
       target,
-      tmplt(values, model),
+      tmplt(aTable, model),
       function (err) {
         if(err) {
           LG(' ----- * * NOT Written * * ---- ');
           return LG(err);
         }
-        LG(' ---------- Type Definitions Written  ------------ ');
+        // LG(' ---------- Type Definitions Written  ------------ ');
         process.exit();
       }
     );
   })
   .catch(function (err) {
     LG('err :: ' + err);
-  })
-  .finally(function () {
-    LG(' ----------  Done  ------------ ');
+  // })
+  // .finally(function () {
+  //   LG(' ----------  Done  ------------ ');
   });
 
 };

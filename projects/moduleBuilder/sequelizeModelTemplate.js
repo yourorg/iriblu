@@ -92,7 +92,7 @@ function xfrm(templateObject, ...substitutions) {
 const modelAttributeTemplate = (addrs, mods) =>
   xfrm`${addrs.map(addr =>
 xfrm`
-    ${mapSubstitution( addr.column_name, mods.sequelize.attributeNameMap )}: {
+    ${mapSubstitution( addr.column_name, mods.sequelize.attributeNameMap, 'orm' )}: {
       type: ${mapDataType(addr.column_type)},
       allowNull: !${addr.is_nullable === 'NO' ? 'false' : 'true'},!${addr.column_key === 'PRI' ? '\n      primaryKey: true,' : ''}!${addr.extra ? addr.extra.match('auto_increment') ? '\n      autoIncrement: true,' : '' : ''}
       field: '!${addr.column_name}',

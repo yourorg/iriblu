@@ -9,7 +9,7 @@ var mapReplace = {
   varchar: 'String',
   char: 'String',
   datetime: 'Date',
-  timestamp: 'Date',
+  timestamp: 'DateTime',
 };
 
   // .replace(/([A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
@@ -76,42 +76,191 @@ const mapType = aType => aType
 
 
 /* eslint-disable max-len */
-const modelAttributeTemplate = addrs =>
-  substitute`${addrs.map(addr =>
-substitute`
-    !${camelize(addr.column_name)} : {
-      type: !${mapType(addr.column_type)},
-      allowNull: !${addr.is_nullable === 'NO' ? 'false' : 'true'},!${addr.column_key === 'PRI' ? '\n      primaryKey: true,' : ''}!${addr.extra ? addr.extra.match('auto_increment') ? '\n      autoIncrement: true,' : '' : ''}
-      field: '!${addr.column_name}',
-    },`)}`;
+// const modelAttributeTemplate = attrs =>
+//   substitute`${attrs.map(attr =>
+// substitute`
+//     !${camelize(attr.column_name)} : {
+//       type: !${mapType(attr.column_type)},
+//       allowNull: !${attr.is_nullable === 'NO' ? 'false' : 'true'},!${attr.column_key === 'PRI' ? '\n      primaryKey: true,' : ''}!${attr.extra ? attr.extra.match('auto_increment') ? '\n      autoIncrement: true,' : '' : ''}
+//       field: '!${attr.column_name}',
+//     },`)}`;
 
-const queryCommentTemplate = ( addrs, queries ) => {
-  return substitute`${addrs.map(addr => {
-    if ( queries.noteCols.includes( addr.ordinal_position ) ) {
+const dataTypeTemplate = ( attrs, queries, nameMap ) => {
+  return substitute`${attrs.map(attr => {
+    if ( queries.cols.includes( attr.ordinal_position ) ) {
       return substitute`
-    #        !${camelize(addr.column_name)}`;
+      !${mapSubstitution(attr.column_name, nameMap, 'orm')}: ${mapType(attr.column_type)}`;
     }
     return '';
   }
   )}`;
 };
 
-const querySpecificationTemplate = ( addrs, queries, nameMap ) => {
-  return substitute`${addrs.map(addr => {
-    if ( queries.cols.includes( addr.ordinal_position ) ) {
+const querySpecificationTemplate = ( attrs, queries, nameMap ) => {
+  return substitute`${attrs.map(attr => {
+    if ( queries.cols.includes( attr.ordinal_position ) ) {
       return substitute`
-      !${mapSubstitution(addr.column_name, nameMap)}: ${mapType(addr.column_type)},`;
+      !${mapSubstitution(attr.column_name, nameMap, 'orm')}: ${mapType(attr.column_type)},`;
     }
     return '';
   }
   )}`;
 };
 
-const createMutationTemplate = ( addrs, queries, nameMap ) => {
-  return substitute`${addrs.map(addr => {
-    if ( queries.cols.includes( addr.ordinal_position ) ) {
+const queryCommentTemplate = ( attrs, queries, nameMap ) => {
+  return substitute`${attrs.map(attr => {
+    if ( queries.noteCols.includes( attr.ordinal_position ) ) {
       return substitute`
-      !${mapSubstitution(addr.column_name, nameMap)}: ${mapType(addr.column_type)},`;
+    #        !${mapSubstitution(camelize(attr.column_name), nameMap, 'orm')}`;
+    }
+    return '';
+  }
+  )}`;
+};
+
+
+const mutCreateArgsTemplate = ( attrs, mutations, nameMap ) => {
+  let spc = '';
+  let arg = ``;
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
+      arg = substitute`${spc}$!${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+                       ` ${mapType(attr.column_type)}` +
+                       `${attr.is_nullable === 'NO' ? '!' : ''}`;
+      spc = ', ';
+      return arg;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutCreateCallTemplate = ( attrs, mutations, nameMap ) => {
+  let spc = '';
+  let arg = ``;
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
+      arg = substitute`${spc}${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+                       ` $${mapSubstitution(attr.column_name, nameMap, 'orm')}`;
+      spc = ', ';
+      return arg;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutCreateRespTemplate = ( attrs, mutations, nameMap ) => {
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsCreateRsvp.includes( attr.ordinal_position ) ) {
+      return substitute`
+  #        !${mapSubstitution(attr.column_name, nameMap, 'orm')}`;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutCreateVarsTemplate = ( attrs, mutations, nameMap ) => {
+  let idx = 0;
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
+      return substitute`
+  #       "!${mapSubstitution(attr.column_name, nameMap, 'orm')}":` +
+` ${mutations.colsCreateVar[idx++]},`;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutCreateMethodTemplate = ( attrs, mutations, nameMap ) => {
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
+      return substitute`
+    !${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+       ` ${mapType(attr.column_type)}${attr.is_nullable === 'NO' ? '!' : ''}`;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutHideVarsTemplate = ( attrs, mutations, nameMap ) => {
+  let idx = 0;
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsHide.includes( attr.ordinal_position ) ) {
+      return substitute`
+  #       "!${mapSubstitution(attr.column_name, nameMap, 'orm')}":` +
+` ${mutations.colsHideVar[idx++]},`;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutUpdateArgsTemplate = ( attrs, mutations, nameMap ) => {
+  let spc = '';
+  let arg = ``;
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
+      arg = substitute`${spc}$!${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+                       ` ${mapType(attr.column_type)}` +
+                       `${attr.is_nullable === 'NO' ? '!' : ''}`;
+      spc = ', ';
+      return arg;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutUpdateCallTemplate = ( attrs, mutations, nameMap ) => {
+  let spc = '';
+  let arg = ``;
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
+      arg = substitute`${spc}${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+                       ` $${mapSubstitution(attr.column_name, nameMap, 'orm')}`;
+      spc = ', ';
+      return arg;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutUpdateRespTemplate = ( attrs, mutations, nameMap ) => {
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsUpdateRsvp.includes( attr.ordinal_position ) ) {
+      return substitute`
+  #        !${mapSubstitution(attr.column_name, nameMap, 'orm')}`;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutUpdateVarsTemplate = ( attrs, mutations, nameMap ) => {
+  let idx = 0;
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
+      return substitute`
+  #       "!${mapSubstitution(attr.column_name, nameMap, 'orm')}":` +
+` ${mutations.colsUpdateVar[idx++]},`;
+    }
+    return '';
+  }
+  )}`;
+};
+
+const mutUpdateMethodTemplate = ( attrs, mutations, nameMap ) => {
+  let idx = 0;
+  return substitute`${attrs.map(attr => {
+    if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
+      return substitute`
+    !${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+       ` ${mapType(attr.column_type)}${mutations.colsUpdateReqd[idx++]}`;
     }
     return '';
   }
@@ -119,54 +268,78 @@ const createMutationTemplate = ( addrs, queries, nameMap ) => {
 };
 /* eslint-enable max-len */
 
-function typeDefinitionTemplate( data, mods ) {
-  LG('===================================================');
-  LG(data);
-  LG('===================================================');
-  LG(mods.typeDef.queries.cols);
-  LG('===================================================');
+function typeDefinitionTemplate( tbl, mods ) {
+  // LG('===================================================');
+  // LG(tbl);
+  // LG('===================================================');
+  // LG(mods.typeDef.queries.cols);
+  // LG('===================================================');
   var queries = mods.typeDef.queries;
+  var mutations = mods.typeDef.mutations;
   var nameMap = mods.sequelize.attributeNameMap;
+  var attrPK = getPrimaryKeyColumn(tbl);
   var typeDefs = `const Queries = \`
-    ###  The items of the delivery note 'fkDelivery'.
+    ###  The items of the delivery note related by 'fkDelivery'.
     ####  Query example :
     #    {
-    #      ${mods.alias.c}(${mapSubstitution(
-              getPrimaryKeyColumn(data), nameMap)}: 1) {${queryCommentTemplate(data, queries)}
+    #      get${mods.alias.u}(${mapSubstitution(
+              attrPK.column_name, nameMap, 'orm')}: 1) {${queryCommentTemplate(tbl, queries, nameMap)}
     #      }
     #    }
-    ${mods.alias.c}(${querySpecificationTemplate(data, queries, nameMap)}
+    get${mods.alias.u}(${querySpecificationTemplate(tbl, queries, nameMap)}
     ): [${mods.alias.u}]
 \`;
 
 const Mutations = \`
-    create${mods.alias.u}( ${querySpecificationTemplate(data, queries, nameMap)}
-      entrega_lines_id: Int!
-      entrega_id: Int!
-      cod: String!
-    ): ${mods.alias.u}
 
-    update${mods.alias.u}(
-      _id: Int!
-      entrega_lines_id: Int!
-      entrega_id: Int!
-      cod: String!
-    ): ${mods.alias.u}
+  ### Mutations
+  #### Create ${mods.alias.tu}
+  #    mutation create${mods.alias.u}(${mutCreateArgsTemplate(tbl, mutations, nameMap)}) {
+  #      createDeliveryItem(${mutCreateCallTemplate(tbl, mutations, nameMap)}) {` +
+`${mutCreateRespTemplate(tbl, mutations, nameMap)}
+  #      }
+  #    }
+  #### Variables
+  #    {${mutCreateVarsTemplate(tbl, mutations, nameMap)}
+  #    }
+  create${mods.alias.u}(${mutCreateMethodTemplate(tbl, mutations, nameMap)}
+  ): ${mods.alias.u}
 
-    hide${mods.alias.u}(
-      _id: Int!
-    ): ${mods.alias.u}
+  #### Hide ${mods.alias.tu}
+  #    mutation hide${mods.alias.u}(` +
+        `$${mapSubstitution(attrPK.column_name, nameMap, 'orm')}:` +
+        ` ${mapType(attrPK.column_type)}${attrPK.is_nullable === 'NO' ? '!' : ''}) {
+  #      hide${mods.alias.u}(${mapSubstitution(attrPK.column_name, nameMap, 'orm')}:` +
+        ` $${mapSubstitution(attrPK.column_name, nameMap, 'orm')}) {
+  #        ${mapSubstitution(tbl[mutations.colsHideRsvp].column_name, nameMap, 'orm')}
+  #      }
+  #    }
+  #### Variables
+  #    {${mutHideVarsTemplate(tbl, mutations, nameMap)}
+  #    }
+  hide${mods.alias.u}(
+    itemId: Int!
+  ): ${mods.alias.u}
+
+  #### Update ${mods.alias.tu}
+  #    mutation update${mods.alias.u}(${mutUpdateArgsTemplate(tbl, mutations, nameMap)}) {
+  #      updateDeliveryItem(${mutUpdateCallTemplate(tbl, mutations, nameMap)}) {` +
+`${mutUpdateRespTemplate(tbl, mutations, nameMap)}
+  #      }
+  #    }
+  #### Variables
+  #    {${mutUpdateVarsTemplate(tbl, mutations, nameMap)}
+  #    }
+  update${mods.alias.u}(${mutUpdateMethodTemplate(tbl, mutations, nameMap)}
+  ): ${mods.alias.u}
+
 \`;
 
 const Types = \`
 
-    type ${mods.alias.u} {
-
-      entrega_lines_id: Int
-      entrega_id: Int
-      cod: String
-      createdAt: DateTime
-
+    type ${mods.alias.u} {${dataTypeTemplate(tbl, queries, nameMap)}
+      updatedAt: DateTime
+      deletedAt: DateTime
     }
 \`;
 
@@ -181,22 +354,4 @@ export default {
   return typeDefs;
 }
 
-
-function typeDefinitionTemplateOld( data, mods ) {
-  const sequelizeModel = `/* jshint indent: 2 */
-
-module.exports = function (sequelize, DataTypes) {
-  return sequelize.define('tb${mods.alias.u}', {${modelAttributeTemplate(data)}
-  }, {
-    timestamps: false,
-    tableName: '${data[0].table_name}'
-  });
-};
-`;
-  return sequelizeModel;
-}
-
-var XXX = 3;
-var ret = ( XXX === 3 ) ? typeDefinitionTemplate : typeDefinitionTemplateOld;
-
-exports.default = ret;
+exports.default = typeDefinitionTemplate;

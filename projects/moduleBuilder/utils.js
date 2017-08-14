@@ -20,6 +20,16 @@ const transform = parms => {
   //   destination
   // );
 
+  data.settings.module.sequelize.attrLegacy = [];
+  data.settings.module.sequelize.attrTarget = [];
+  let map = data.settings.module.sequelize.attributeNameMap;
+  let spc = '';
+  for (const key of Object.keys(map)) {
+    data.settings.module.sequelize.attrLegacy += spc + key;
+    data.settings.module.sequelize.attrTarget += spc + map[key].db;
+    spc = ', ';
+  }
+
   shell.mkdir('-p', destination);
 
   fs.readFile(origin + '/' + file, 'utf8',
@@ -143,14 +153,12 @@ function mapDataType(aType) {
 }
 
 const getPrimaryKeyColumn = attributes => attributes
-  .filter( attribute => attribute.column_key === 'PRI')[0].column_name;
+  .filter( attribute => attribute.column_key === 'PRI')[0];
 
-function mapSubstitution( val, map ) {
-  var ret = map[val];
-  if ( typeof ret === 'undefined' ) { return val; }
-  return ret;
+function mapSubstitution( val, map, part ) {
+  if ( typeof map[val] === 'undefined' ) { return val; }
+  return ( part ) ? map[val][part] : map[val];
 }
-
 
 module.exports = {
   transform,

@@ -1,6 +1,7 @@
 const transform = require('./utils').transform;
 const shell = require('shelljs');
 const sqlze = require('./sequelizeModel');
+const srvrUnit = require('./srvrUnitTest');
 
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
 const Task = 'Server';
@@ -42,8 +43,16 @@ module.exports = function (settings) {
   transform(parameters);
 
 // -----------------------------------------------------
+  parameters.file = 'migration.js';
+  LG('   - Generate migrations : %s',
+    parameters.file,
+    parameters.destination
+  );
+  transform(parameters);
+
+// -----------------------------------------------------
   parameters.file = 'resolvers.js';
-  LG('   - (Done) Prepare and copy %s to %s',
+  LG('   - Generate resolvers : %s',
     parameters.file,
     parameters.destination
   );
@@ -51,7 +60,7 @@ module.exports = function (settings) {
 
 // -----------------------------------------------------
   parameters.file = 'tblSqlzr.js';
-  LG('   - Prepare and copy %s to %s',
+  LG('   - Generate sequelizer specification : %s',
     parameters.file,
     parameters.destination
   );
@@ -60,9 +69,11 @@ module.exports = function (settings) {
 
 // -----------------------------------------------------
   parameters.file = 'unit.js';
-  LG('   - (Done) Prepare and copy %s.',
-    parameters.file
+  LG('   - Generate server unit tests : "%s".',
+    parameters.file,
+    parameters.destination
   );
-  transform(parameters);
+  srvrUnit(parameters);
+  // transform(parameters);
 
 };

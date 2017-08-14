@@ -9,8 +9,8 @@ const tasks = [
   tests,
   index,
   client,
-  server,
   lib,
+  server,
 ];
 module.exports = function (module) {
   tasks.forEach( task => task(module) );

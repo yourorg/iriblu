@@ -60,19 +60,32 @@ const sourceTables = [
     },
     sequelize: {
       attributeNameMap: {
-        entrega_lines_id: 'idDeliveryItem',
-        entrega_id: 'fkDelivery'
+        entrega_lines_id: { db: 'item_id', orm: 'itemId' },
+        entrega_id: { db: 'fk_delivery', orm: 'fkDelivery' },
+        cod: { db: 'code', orm: 'code' }
       }
+    },
+    srvrUnitTest: {
+      expected: 'IBAA001',
+      colExpected: 2,
     },
     typeDef: {
       queries: {
-        note: 'The items of the delivery note "entrega_id"',
+        note: 'The items of the delivery note "fkDelivery"',
         noteCols: [ 1, 2, 3, 4 ],
         cols: [ 1, 2, 3, 4 ],
       },
       mutations: {
-        colsCreate: 'The items of the delivery note "entrega_id"',
-        colsUpdate: [ 1, 2, 3, 4 ],
+        colsCreate: [ 2, 3 ],
+        colsCreateVar: [ 3, '"IBIB004"' ],
+        colsCreateRsvp: [ 1, 3 ],
+        colsHide: [ 1 ],
+        colsHideVar: [ 3 ],
+        colsHideRsvp: [ 2 ],
+        colsUpdate: [ 1, 2, 3 ],
+        colsUpdateVar: [ 999, 444, '"Izzz004"' ],
+        colsUpdateRsvp: [ 1, 2, 3 ],
+        colsUpdateReqd: [ '!', '', '' ],
       },
       types: ''
     }
