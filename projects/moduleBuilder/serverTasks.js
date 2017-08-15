@@ -1,6 +1,7 @@
 const transform = require('./utils').transform;
 const shell = require('shelljs');
 const sqlze = require('./sequelizeModel');
+const rslvrs = require('./gqlResolvers');
 const srvrUnit = require('./srvrUnitTest');
 
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
@@ -56,7 +57,7 @@ module.exports = function (settings) {
     parameters.file,
     parameters.destination
   );
-  transform(parameters);
+  rslvrs(parameters);
 
 // -----------------------------------------------------
   parameters.file = 'tblSqlzr.js';

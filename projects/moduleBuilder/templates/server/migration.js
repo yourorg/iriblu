@@ -23,7 +23,7 @@ module.exports = function () {
            SELECT ` + attrLegacy + `, createdAt, createdAt as updatedAt
            FROM  ` + tblLegacy,
         { type: sequelize.QueryTypes.INSERT }
-        /* eslint-enable quotes */
+        /* eslint-enable quotes  */
       ).then( rpt => {
         LG(' - Last "item_id" of %s for %s rows inserted into "%s".', rpt[0], rpt[1], entity);
       }).catch( err => LG('query error. ' + err.message));

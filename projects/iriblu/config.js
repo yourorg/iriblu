@@ -69,6 +69,10 @@ const sourceTables = [
       expected: 'IBAA001',
       colExpected: 2,
     },
+    resolvers: {
+      mainName: 'code',
+      createParms: [ 2, 3 ]
+    },
     typeDef: {
       queries: {
         note: 'The items of the delivery note "fkDelivery"',

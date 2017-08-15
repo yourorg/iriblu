@@ -70,7 +70,7 @@ export default {
           } else {
             this.timeout(60000);
             return rp(options).then(function (rslt) {
-              // LG(' Got :: ' );
+              // LG(' Got ::  ' );
               // LG( rslt.data );
               assert.equal(rslt.data.get${mods.alias.u}[0].` +
               `${nameMap[tbl[mods.srvrUnitTest.colExpected].column_name].orm}, expected);

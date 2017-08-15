@@ -94,20 +94,35 @@ const modelAttributeTemplate = (addrs, mods) =>
 xfrm`
     ${mapSubstitution( addr.column_name, mods.sequelize.attributeNameMap, 'orm' )}: {
       type: ${mapDataType(addr.column_type)},
-      allowNull: !${addr.is_nullable === 'NO' ? 'false' : 'true'},!${addr.column_key === 'PRI' ? '\n      primaryKey: true,' : ''}!${addr.extra ? addr.extra.match('auto_increment') ? '\n      autoIncrement: true,' : '' : ''}
-      field: '!${addr.column_name}',
+      allowNull: !${addr.is_nullable === 'NO' ?
+        'false' :
+        'true'},!${addr.column_key === 'PRI' ?
+        '\n      primaryKey: true,' :
+        ''}!${addr.extra ?
+          addr.extra.match('auto_increment') ?
+          '\n      autoIncrement: true,' :
+          '' :
+          ''}
+      field: '${mapSubstitution( addr.column_name, mods.sequelize.attributeNameMap, 'db' )}',
+      comment: '!${addr.column_name}',
     },`)}`;
 /* eslint-enable max-len */
 
 function sequelizeModelTemplate( data, mods ) {
-  const sequelizeModel = `/* jshint indent: 2 */
+  const sequelizeModel = `const LG = console.log; // eslint-disable-line no-console,no-unused-vars
+
+const Instance = '${mods.alias.u}';
+const Table = '${mods.alias.o}';
 
 module.exports = function (sequelize, DataTypes) {
-  return sequelize.define('tb${mods.alias.u}', {${modelAttributeTemplate(data, mods)}
+  let ${mods.alias.u} = sequelize.define(Instance, {${modelAttributeTemplate(data, mods)}
   }, {
-    timestamps: false,
-    tableName: '${data[0].table_name}'
+    tableName: Table,
+    timestamps: true,
+    paranoid: true,
   });
+
+  return DeliveryItem;
 };
 `;
 

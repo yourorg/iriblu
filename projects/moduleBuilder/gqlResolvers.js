@@ -1,11 +1,22 @@
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
 
-const tmplt = require('./sequelizeModelTemplate').default;
+const tmplt = require('./gqlResolversTemplate').default;
 const fs = require('fs');
 
 module.exports = function ( args ) {
+  const project = args.values.settings.project;
   const model = args.values.settings.module;
   const config = args.values.settings.config;
+  // LG(' ----------  Starting  ------------- ');
+  // LG( tmplt );
+
+  // LG( args );
+  // LG(' ---------- ');
+  // LG( model );
+  // LG(' ---------- ');
+  // LG( config );
+  // LG(' ---------- ');
+  // LG('  ---- Write to ', args.destination + '/' + args.file);
 
   const knex = require('knex')(config.rdbmsConfig);
   // const targetDir = '../target/' + config.subdirectory + '/server/model';
@@ -23,28 +34,30 @@ module.exports = function ( args ) {
       'column_key',
       'extra'
     ])
-    .whereNotIn('column_name', [ 'createdAt', 'createdAt', 'deletedAt' ])
-    .andWhere('table_schema', 'meteor_data')
-    .andWhere('table_name', model.name);
+    .where('table_schema', 'meteor_data')
+    .andWhere('table_name', model.name)
+    .orderBy('ordinal_position', 'asc');
 
   const target = args.destination + '/' + args.file;
 
   promise
-  .then(function (values) {
+  .then(function (aTable) {
 
-    // LG(' --- Preparing Sequelize Models ----- : ', model.alias.u);
-    // // LG( values  );
-    // LG(' -------------------- ');
-    // LG( tmplt(values, model) );
-    // LG(' --------- Writing to :: ', target);
+    // LG(' --- Preparing server Unit Test Definitions :: ', model.alias.u);
+    // LG( aTable );
+    // LG(' <<-------------------------- >> ');
+    // LG( tmplt(project, aTable, model) );
+
+    LG(' ---------- Writing to :: ', target);
     fs.writeFile(
       target,
-      tmplt(values, model),
+      tmplt(project, aTable, model),
       function (err) {
         if(err) {
+          LG(' ----- * * NOT Written * * ---- ');
           return LG(err);
         }
-//        LG(' ---------- Sequelize Models Written  ------------ \n\n\n\n\n\n');
+        LG(' ---------- Type Definitions Written  ------------ ');
         process.exit();
       }
     );
