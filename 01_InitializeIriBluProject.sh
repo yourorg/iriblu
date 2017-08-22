@@ -8,11 +8,14 @@ echo -e "${PRETTY} prepare NodeJS versions ...";
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
+export INSTALL="curl";
+dpkg -s ${INSTALL} >/dev/null && echo " - ${INSTALL} is installed" || sudo apt-get install -y ${INSTALL};
+
 export INSTALL="jq";
-dpkg-query -s ${INSTALL} >/dev/null && echo " - ${INSTALL} is installed" || sudo apt-get install -y ${INSTALL};
+dpkg -s ${INSTALL} >/dev/null && echo " - ${INSTALL} is installed" || sudo apt-get install -y ${INSTALL};
 
 export PURGE="nodejs";
-dpkg-query -s ${PURGE} &>/dev/null && sudo apt-get purge -y ${PURGE} || echo " - ${PURGE} has been purged";
+dpkg -s ${PURGE} &>/dev/null && sudo apt-get purge -y ${PURGE} || echo " - ${PURGE} has been purged";
 
 export NVM_VERSION=$(curl -s https://api.github.com/repos/creationix/nvm/releases/latest | jq -r ".name");
 export NVM_INSTALLED=$(nvm --version);
@@ -36,7 +39,6 @@ nvm ls ${NODE_VERSION} >/dev/null \
   && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
   || nvm install ${NODE_VERSION};
 
-exit;
 
 
 echo -e "${PRETTY} Prepare 'mmks' ...";
@@ -59,7 +61,7 @@ else
 fi;
 
 echo -e "${PRETTY} copy in 'mmks' ..."
-cp -r ../mmks .;
+cp -r ../mmks . 2>/dev/null;
 
 # read -n 1 -s -p "Press any key to continue";
 
