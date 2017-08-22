@@ -40,7 +40,6 @@ nvm ls ${NODE_VERSION} >/dev/null \
   || nvm install ${NODE_VERSION};
 
 
-
 echo -e "${PRETTY} Prepare 'mmks' ...";
 # rm -fr mmks;
 
@@ -81,7 +80,7 @@ pushd mmks &>/dev/null;
     . ~/.userVars.sh;
   else
     echo -e "${PRETTY} preparing user variables ..."
-    .scripts/preFlightCheck.sh;
+    .scripts/preFlightCheck.sh || exit 1;
   fi;
   echo -e "${PRETTY} install 'IriBlu' ...";
   # read -n 1 -s -p "Press any key to continue";
