@@ -2,6 +2,8 @@
 #
 declare PRETTY="~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nIRIBLU Deploy :: ";
 
+export CI='';
+
 sudo ls >/dev/null;
 
 echo -e "${PRETTY} step out to parent directory  ..."
@@ -53,6 +55,7 @@ pushd .. &>/dev/null;
 
 popd &>/dev/null;
 
+CI=false;
 pushd ../IriBluBuilt &>/dev/null;
 
   echo -e "${PRETTY} install 'IriBluBuilt' project ..."
@@ -63,6 +66,7 @@ pushd ../IriBluBuilt &>/dev/null;
 popd &>/dev/null;
 
 # read -n 1 -s -p "Press any key to continue";
+CI=true;
 
 source 02_TestIriBluProject.sh;
 echo -e "${PRETTY} test 'IriBluBuilt' project   ...";
