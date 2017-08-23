@@ -7,7 +7,7 @@ import loadBook from '../api/loadBook';
 
 import { UPDATE_BOOK_MUTATION } from '../api/mutationsBooks';
 
-export const singleComposer = ({context, _id, clearErrors}, onData) => {
+export const singleComposer = ({ context, _id }, onData) => {
 
 //  const {Meteor, Collections, LocalState} = context();
   const {ApolloClient, LocalState} = context();

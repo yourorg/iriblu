@@ -6,7 +6,7 @@ import loadBook from '../api/loadBook';
 
 import { HIDE_BOOK_MUTATION } from '../api/mutationsBooks';
 
-export const singleComposer = ({context, _id, accesspoints, clearErrors}, onData) => {
+export const singleComposer = ({ context, _id }, onData) => {
 
 //  const {Meteor, Collections, LocalState} = context();
   const {ApolloClient, LocalState} = context();

@@ -66,7 +66,7 @@ export default {
   },
 
   // update
-  update({Meteor, LocalState, FlowRouter}, book, mutate) {
+  update({ FlowRouter }, book, mutate) {
     Lgr.a = 'update';
     console.log('Update book (data) : ', book);        // eslint-disable-line no-console
     console.log('Update book (_id) : ', book._id);        // eslint-disable-line no-console
@@ -91,7 +91,7 @@ export default {
   },
 
   // hide
-  hide({Meteor, LocalState, FlowRouter}, _id, mutate) {
+  hide({ FlowRouter }, _id, mutate) {
     Lgr.a = 'hide';
     console.log('Hide book (_id) : ', _id);        // eslint-disable-line no-console
     mutate({

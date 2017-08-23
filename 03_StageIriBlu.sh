@@ -56,7 +56,7 @@ popd &>/dev/null;
 pushd ../IriBluBuilt &>/dev/null;
 
   echo -e "${PRETTY} install 'IriBluBuilt' project ..."
-  .scripts/preFlightCheck.sh;
+  .scripts/preFlightCheck.sh || exit 1;
   . ${HOME}/.userVars.sh;
   ./install_all.sh;
 

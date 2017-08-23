@@ -1,7 +1,7 @@
 import {useDeps} from 'react-simple-di';
 import { composeAll, composeWithTracker } from 'mantra-core';
 
-export const sideBarComposer = ({context, clearErrors}, onData) => {
+export const sideBarComposer = ({}, onData) => {
 
   onData(null, { } );
 
