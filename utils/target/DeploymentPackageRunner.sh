@@ -90,17 +90,17 @@ function obtainLetsEncryptSSLCertificate() {
   --------------------------------------------------
   ";
 
-  sudo -A cp ${SCRIPTPATH}/secrets/dh/dhparams_4096.pem /etc/ssl/private && \
-  echo -e "
-    Installed Diffie-Helman parameters.
-  --------------------------------------------------
-  " || (
-  echo -e "
-    * * * FAILED TO INSTALL DIFFIE-HELMAN PARAMETERS * * *
-  --------------------------------------------------
-  ";
-  exit 1;
-  )
+  # sudo -A cp ${SCRIPTPATH}/secrets/dh/dhparams_4096.pem /etc/ssl/private && \
+  # echo -e "
+  #   Installed Diffie-Helman parameters.
+  # --------------------------------------------------
+  # " || (
+  # echo -e "
+  #   * * * FAILED TO INSTALL DIFFIE-HELMAN PARAMETERS * * *
+  # --------------------------------------------------
+  # ";
+  # exit 1;
+  # )
 
   export REQUEST_CERT="NO";
   export LETSENCRYPT_ACCT_NUM=""; # $(cat ${LETSENCRYPT_RENEWAL}/yourhost.yourpublic.work.conf | grep account | sed -n "/account = /s/account = //p")
