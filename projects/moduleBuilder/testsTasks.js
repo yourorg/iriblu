@@ -1,19 +1,22 @@
 var shell = require('shelljs');
 
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
-const task = 'Tests';
+const Task = 'Tests';
+const task = 'tests';
 module.exports = function (settings) {
-  LG(' - %s Tasks ::: %s ', task, settings.module.alias.tu );
-  LG('   - (DONE) Prepare and copy ./index.js to %s', settings.config.structure.targetDir );
-  shell.mkdir('-p',
-    settings.project + '/' +
-    settings.config.structure.targetDir + '/' +
-    'tests'
-  );
+  var stctr = settings.config.structure;
+  var dest = './' + settings.project +
+  '/' + stctr.targetDir +
+  '/' + stctr.prefix + settings.module.alias.l +
+  '/' + task;
+
+  LG(' - %s Tasks ::: %s ', Task, settings.module.alias.tu );
+  LG('   - (DONE) Prepare and copy ./index.js to %s', dest );
+
+  shell.mkdir('-p', dest);
+
   shell.cp('-u',
     'moduleBuilder/templates/tests/index.js',
-    settings.project + '/' +
-    settings.config.structure.targetDir + '/' +
-    'tests'
+    dest
   );
 };

@@ -1,5 +1,5 @@
 const structure = {
-  targetDir: 'target',
+  targetDir: 'imports',
   prefix: 'iriblu_',
 };
 

@@ -10,6 +10,7 @@ const task = Task.toLowerCase();
 module.exports = function (settings) {
   LG(' - %s Tasks ::: %s ', Task, settings.module.alias.tu );
 
+  var stctr = settings.config.structure;
   var parameters = {
     values: { settings },
     file: '',
@@ -18,11 +19,10 @@ module.exports = function (settings) {
   };
 
   parameters.origin = './moduleBuilder/templates/' + task;
-  parameters.destination =
-  './' + settings.project +
-  '/' + settings.config.structure.targetDir +
-  '/' + task;
-
+  parameters.destination = './' + settings.project +
+      '/' + stctr.targetDir +
+      '/' + stctr.prefix + settings.module.alias.l +
+      '/' + task;
 
 // -----------------------------------------------------
   shell.mkdir('-p', parameters.destination);

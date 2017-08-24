@@ -14,12 +14,13 @@ module.exports = function (settings) {
     destination: '',
   };
 
+  var stctr = settings.config.structure;
   parameters.origin = './moduleBuilder/templates/' + task;
   parameters.destination =
   './' + settings.project +
-  '/' + settings.config.structure.targetDir +
+  '/' + stctr.targetDir +
+  '/' + stctr.prefix + settings.module.alias.l +
   '/' + task;
-
 
 // -----------------------------------------------------
   shell.mkdir('-p', parameters.destination);
