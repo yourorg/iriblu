@@ -17,7 +17,7 @@ source ../utils/ssh_utils.sh;
 AddSSHkeyToAgent ${VHOST_SECRETS_DIR}/deploy_user/id_rsa ${DEPLOY_USER_SSH_PASS_PHRASE};
 
 # export DEPLOY_USER="you";
-export TARGET_SRVR="irid.blue";
+export TARGET_SRVR="yourhost.yourpublic.work";
 echo "TARGET_SRVR -- ${TARGET_SRVR}";
 
 export SHELL_TESTS="../utils/shell";

@@ -90,14 +90,20 @@ function obtainLetsEncryptSSLCertificate() {
   --------------------------------------------------
   ";
 
-  sudo -A cp ${SCRIPTPATH}/secrets/dh/dhparams_4096.pem /etc/ssl/private;
+  sudo -A cp ${SCRIPTPATH}/secrets/dh/dhparams_4096.pem /etc/ssl/private && \
   echo -e "
     Installed Diffie-Helman parameters.
   --------------------------------------------------
+  " || (
+  echo -e "
+    * * * FAILED TO INSTALL DIFFIE-HELMAN PARAMETERS * * *
+  --------------------------------------------------
   ";
+  exit 1;
+  )
 
   export REQUEST_CERT="NO";
-  export LETSENCRYPT_ACCT_NUM=""; # $(cat ${LETSENCRYPT_RENEWAL}/reciprocal.trade.conf | grep account | sed -n "/account = /s/account = //p")
+  export LETSENCRYPT_ACCT_NUM=""; # $(cat ${LETSENCRYPT_RENEWAL}/yourhost.yourpublic.work.conf | grep account | sed -n "/account = /s/account = //p")
   export LETSENCRYPT_CREATION_DATE=""; # $(cat ${LETSENCRYPT_ACCTS}/${LETSENCRYPT_ACCT_NUM}/meta.json | jq -r .creation_dt)
 
   echo -e "Have renewal directoy?";

@@ -180,6 +180,7 @@ pushd ${SCRIPTPATH};
       || echo ${PGRES_SRC} \
       |  sudo -A tee ${PGRES_APT};
 
+  /usr/share/mdadm/mkconf > sudo -A tee /etc/mdadm/mdadm.conf;
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get update -y >>  ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get upgrade -y >>  ${LOG};
 

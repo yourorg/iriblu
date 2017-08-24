@@ -141,6 +141,5 @@ popd &>/dev/null;
 echo -e "${PRETTY}
  ... done!";
 
-
-# echo -e "|||||||||||||| C U R T A I L E D |||||||||||||||||||||";
+# echo -e "||||||||||||| C U R T A I L E D |||||||||||||||||||||";
 exit;

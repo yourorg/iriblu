@@ -18,12 +18,12 @@ exit;
 
 export SETUP_USER_UID="you";
 export DEPLOY_USER="meta";
-export TARGET_SRVR="irid.blue";
+export TARGET_SRVR="yourhost.yourpublic.work";
 
 echo -e "${PRTY} Set up SSH...";
 source utils/ssh_utils.sh;
 startSSHAgent;
-AddSSHkeyToAgent ${HOME}/.ssh/deploy_vault/reciprocal.trade/deploy_user/id_rsa memorablegobbledygook
+AddSSHkeyToAgent ${HOME}/.ssh/deploy_vault/yourhost.yourpublic.work/deploy_user/id_rsa memorablegobbledygook
 
 echo -e "${PRTY} Copy working files...";
 scp  utils/target/*.* ${DEPLOY_USER}@${TARGET_SRVR}:/home/${DEPLOY_USER}/DeploymentPkgInstallerScripts;
@@ -42,4 +42,6 @@ echo -e "
 
 ssh ${DEPLOY_USER}@${TARGET_SRVR} \". ~/.bash_login && ~/DeploymentPkgInstallerScripts/DeploymentPackageRunner.sh\";"
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && ~/DeploymentPkgInstallerScripts/DeploymentPackageRunner.sh";
+
+# grep "ARRAY devices" /etc/mdadm/mdadm.conf >/dev/null || echo "ARRAY devices=/dev/null" | sudo -A tee -a /etc/mdadm/mdadm.conf >/dev/null;
 

@@ -2,7 +2,8 @@
 #
 declare PRETTY="~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nIRIBLU Deploy :: ";
 
-export CI='';
+export CI=${CI:false};
+export CI_BK=${CI_BK:CI};
 
 sudo ls >/dev/null;
 
@@ -66,7 +67,7 @@ pushd ../IriBluBuilt &>/dev/null;
 popd &>/dev/null;
 
 # read -n 1 -s -p "Press any key to continue";
-CI=true;
+CI=${CI_BK};
 
 source 02_TestIriBluProject.sh;
 echo -e "${PRETTY} test 'IriBluBuilt' project   ...";

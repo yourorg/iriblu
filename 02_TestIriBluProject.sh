@@ -2,6 +2,8 @@
 #
 declare PRETTY="~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nIRIBLU Test :: ";
 
+export CI=${CI:false};
+export CI_BK=${CI_BK:CI};
 function killMeteorProcess()
 {
   echo -e "${PRETTY} kill meteor processes, if any ...";
@@ -29,12 +31,14 @@ function TestRun() {
     pwd;
     npm knex --version;
 
-    echo -e "${PRETTY} linting and unit tests ...";
-    meteor npm test;
-
     echo -e "${PRETTY} Starting app in background ...";
     meteor reset;
     nohup .scripts/startInDevMode.sh &
+
+    echo -e "${PRETTY} linting and unit tests ...";
+    CI=true;
+    meteor npm test;
+    CI=${CI_BK};
 
     if [[ -z ${DISPLAY} ]]; then
       echo -e "${PRETTY} No GUI found for browser display.
