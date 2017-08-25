@@ -201,8 +201,8 @@ pushd DeploymentPkgInstallerScripts >/dev/null;
             # # # Skipping formal SSL certificate installation for now # # #
 Extracting $(pwd)/letsencrypt.tar.gz to /etc .....
     ";
-    sudo -A tar zxvf letsencrypt.tar.gz -C /;
-    sudo -A cp ./secrets/dh/*.pem /etc/ssl/private;
+    sudo -A tar zxvf letsencrypt.tar.gz -C /etc;
+#    sudo -A cp ./secrets/dh/*.pem /etc/ssl/private;
   else
     echo -e " # # # Obtaining SSL certificates for '${VIRTUAL_HOST_DOMAIN_NAME}' # # #  ";
     obtainLetsEncryptSSLCertificate;
