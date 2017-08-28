@@ -90,17 +90,17 @@ function obtainLetsEncryptSSLCertificate() {
   --------------------------------------------------
   ";
 
-  # sudo -A cp ${SCRIPTPATH}/secrets/dh/dhparams_4096.pem /etc/ssl/private && \
-  # echo -e "
-  #   Installed Diffie-Helman parameters.
-  # --------------------------------------------------
-  # " || (
-  # echo -e "
-  #   * * * FAILED TO INSTALL DIFFIE-HELMAN PARAMETERS * * *
-  # --------------------------------------------------
-  # ";
-  # exit 1;
-  # )
+  sudo -A cp ${SCRIPTPATH}/secrets/dh/dhparams_4096.pem /etc/ssl/private && \
+  echo -e "
+    Installed Diffie-Hellman parameters.
+  --------------------------------------------------
+  " || (
+  echo -e "
+    * * * FAILED TO INSTALL DIFFIE-HELLMAN PARAMETERS * * *
+  --------------------------------------------------
+  ";
+  exit 1;
+  )
 
   export REQUEST_CERT="NO";
   export LETSENCRYPT_ACCT_NUM=""; # $(cat ${LETSENCRYPT_RENEWAL}/yourhost.yourpublic.work.conf | grep account | sed -n "/account = /s/account = //p")
@@ -177,6 +177,7 @@ if [ ! -f "${TARGET_SECRETS_FILE}" ]; then errorNoSecretsFileSpecified "${TARGET
 source ${TARGET_SECRETS_FILE};
 
 
+echo -e "${PRTY} Install 'incron' daemon.  "  | tee -a ${LOG};
 which incrond >/dev/null || sudo -A DEBIAN_FRONTEND=noninteractive apt-get -y install incron;
 
 

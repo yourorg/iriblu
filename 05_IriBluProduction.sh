@@ -66,11 +66,15 @@ pushd ../${pkg_name} &>/dev/null;
     source .scripts/android/installAndBuildTools.sh;
     echo -e "${PRTY} Preparing To Build AndroidAPK";
     PrepareToBuildAndroidAPK;
+    echo -e "${PRTY} Prepared for building AndroidAPK";
 
     rm -fr ./node_modules;
     rm -fr ./.meteor/local;
     mkdir -p ./node_modules;
 
+    echo -e "${PRTY} * * * FIXME * * *
+
+    These steps should be generic !";
     pushd ./.pkgs &>/dev/null;
       pushd ./gitignored_mmks_book &>/dev/null;
         rm -fr dist;

@@ -5,7 +5,7 @@ export TARGET_SRVR="yourhost.yourpublic.work";
 # # The sudoer password for the account that will install Habitat
 export SETUP_USER_UID="you";
 
-export VIRTUAL_HOST_DOMAIN_NAME="yourhost.yourpublic.work";
+export VIRTUAL_HOST_DOMAIN_NAME="yoursite.yourpublic.work";
 export DEPLOY_USER_SSH_KEY_COMMENT="IridBlue Deployment User Key";
 
 export IS_GITSUBMODULE="yes";

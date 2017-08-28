@@ -14,7 +14,9 @@ function initialSecurityTasks() {
   sudo -A ufw allow in http;
   sudo -A ufw allow out https;
   sudo -A ufw allow in https;
-  sudo -A ufw allow out 53;
+
+  sudo -A ufw allow out 53/tcp;
+  sudo -A ufw allow out 53,67,68/udp
 
   echo -e "ufw for MariaDB on VPN";
   sudo -A ufw allow from 192.168.122.0/24 to any port 3306;
@@ -68,6 +70,10 @@ export ENVIRONMENT="environment.sh";
 
 echo -e "Meteor App Deployment Preparation Log :: $(date)
 =======================================================" > ${LOG};
+
+echo -e "${PRTY} Suppress spurious 'mdadm' warning.  "  | tee -a ${LOG};
+grep "ARRAY devices" /etc/mdadm/mdadm.conf >/dev/null \
+  || echo "ARRAY devices=/dev/null" | sudo -A tee -a /etc/mdadm/mdadm.conf >/dev/null;
 
 echo -e "\n${PRTY} Preparing server security."  | tee -a ${LOG};
 initialSecurityTasks;
@@ -180,7 +186,6 @@ pushd ${SCRIPTPATH};
       || echo ${PGRES_SRC} \
       |  sudo -A tee ${PGRES_APT};
 
-  /usr/share/mdadm/mkconf > sudo -A tee /etc/mdadm/mdadm.conf;
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get update -y >>  ${LOG};
   sudo -A DEBIAN_FRONTEND=noninteractive apt-get upgrade -y >>  ${LOG};
 

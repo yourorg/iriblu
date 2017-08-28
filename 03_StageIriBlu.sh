@@ -7,6 +7,15 @@ export CI_BK=${CI_BK:CI};
 
 sudo ls >/dev/null;
 
+if [ ! -d ./mmks ]; then
+  echo -e "
+
+  * * * * Found no directory './mmks'. * * *
+  You must first execute './01_InitializeIriBluProject.sh'
+  Quitting ...";
+  exit;
+fi;
+
 echo -e "${PRETTY} step out to parent directory  ..."
 pushd .. &>/dev/null;
 
@@ -34,7 +43,7 @@ popd &>/dev/null;
 
 pushd mmks &>/dev/null;
   echo -e "${PRETTY} copy 'iriblu' project to 'IriBluBuilt'   ...";
-  ./clean_all.sh;
+  ./clean_all.sh shallow;
   cp -r meteor-mantra-kickstarter/. ../../IriBluBuilt;
   echo -e "${PRETTY}
 

@@ -65,10 +65,10 @@ function errorNoEnvVarsFileSpecified() {
   usage;
 }
 
-# function errorDHParamsFileSpecified() {
-#   echo -e "\n\n    *** A valid path to a file of Diffie-Hellman paramaters for the remote server needs to be specified, not '${1}'  ***";
-#   usage;
-# }
+function errorDHParamsFileSpecified() {
+  echo -e "\n\n    *** A valid path to a file of Diffie-Hellman paramaters for the remote server needs to be specified, not '${1}'  ***";
+  usage;
+}
 
 
 function errorCannotCallRemoteProcedure() {
@@ -195,11 +195,11 @@ if [ ! -f "${ENVIRONMENT}" ]; then errorNoEnvVarsFileSpecified "${ENVIRONMENT}";
 source ${ENVIRONMENT};
 
 # ----------------
-# echo -e "${PRTY} Testing Diffie-Hellman paramaters file availability... [   ls \"${DH_PARAMS_DIR}\"  ]";
-# if [[ "X${DH_PARAMS_DIR}X" = "XX" ]]; then errorDHParamsFileSpecified "null"; fi;
-# if [ ! -d "${DH_PARAMS_DIR}" ]; then errorDHParamsFileSpecified "${DH_PARAMS_DIR}"; fi;
-# echo -e "${PRTY} Got $(head -n 2 ${DH_PARAMS_DIR})
-# ";
+echo -e "${PRTY} Testing Diffie-Hellman paramaters file availability... [   ls \"${DH_PARAMS_DIR}\"  ]";
+if [[ "X${DH_PARAMS_DIR}X" = "XX" ]]; then errorDHParamsFileSpecified "null"; fi;
+if [ ! -d "${DH_PARAMS_DIR}" ]; then errorDHParamsFileSpecified "${DH_PARAMS_DIR}"; fi;
+echo -e "${PRTY} Got $(head -n 2 ${DH_PARAMS_DIR})
+";
 
 
 # ----------------
