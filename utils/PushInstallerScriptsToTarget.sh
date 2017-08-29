@@ -154,8 +154,8 @@ SETUP_USER_UID=${2};
 # METEOR_SETTINGS_FILE=${3};
 SOURCE_SECRETS_DIR=${3};
 ENVIRONMENT=${4};
-# DH_PARAMS_DIR=${5};
 
+DH_PARAMS_DIR="${SOURCE_SECRETS_DIR}/dh";
 SOURCE_SECRETS_FILE="${SOURCE_SECRETS_DIR}/secrets.sh";
 
 
@@ -167,7 +167,7 @@ echo -e "${PRTY} SETUP_USER_UID=${SETUP_USER_UID}";
 echo -e "${PRTY} SOURCE_SECRETS_DIR=${SOURCE_SECRETS_DIR}";
 echo -e "${PRTY} SOURCE_SECRETS_FILE=${SOURCE_SECRETS_FILE}";
 echo -e "${PRTY} ENVIRONMENT=${ENVIRONMENT}";
-# echo -e "${PRTY} DH_PARAMS_DIR=${DH_PARAMS_DIR}";
+echo -e "${PRTY} DH_PARAMS_DIR=${DH_PARAMS_DIR}";
 
 # set -e;
 
@@ -195,7 +195,7 @@ if [ ! -f "${ENVIRONMENT}" ]; then errorNoEnvVarsFileSpecified "${ENVIRONMENT}";
 source ${ENVIRONMENT};
 
 # ----------------
-echo -e "${PRTY} Testing Diffie-Hellman paramaters file availability... [   ls \"${DH_PARAMS_DIR}\"  ]";
+echo -e "${PRTY} Testing Diffie-Hellman parameters file availability... [   ls \"${DH_PARAMS_DIR}\"  ]";
 if [[ "X${DH_PARAMS_DIR}X" = "XX" ]]; then errorDHParamsFileSpecified "null"; fi;
 if [ ! -d "${DH_PARAMS_DIR}" ]; then errorDHParamsFileSpecified "${DH_PARAMS_DIR}"; fi;
 echo -e "${PRTY} Got $(head -n 2 ${DH_PARAMS_DIR})
