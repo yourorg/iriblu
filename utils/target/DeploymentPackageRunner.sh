@@ -90,17 +90,6 @@ function obtainLetsEncryptSSLCertificate() {
   --------------------------------------------------
   ";
 
-  sudo -A cp ${SCRIPTPATH}/secrets/dh/dhparams_4096.pem /etc/ssl/private && \
-  echo -e "
-    Installed Diffie-Hellman parameters.
-  --------------------------------------------------
-  " || (
-  echo -e "
-    * * * FAILED TO INSTALL DIFFIE-HELLMAN PARAMETERS * * *
-  --------------------------------------------------
-  ";
-  exit 1;
-  )
 
   export REQUEST_CERT="NO";
   export LETSENCRYPT_ACCT_NUM=""; # $(cat ${LETSENCRYPT_RENEWAL}/yourhost.yourpublic.work.conf | grep account | sed -n "/account = /s/account = //p")
@@ -207,6 +196,21 @@ Extracting $(pwd)/letsencrypt.tar.gz to /etc .....
   else
     echo -e " # # # Obtaining SSL certificates for '${VIRTUAL_HOST_DOMAIN_NAME}' # # #  ";
     obtainLetsEncryptSSLCertificate;
+  fi;
+
+  sudo -A cp ${SCRIPTPATH}/secrets/dh/dhparams_4096.pem /etc/ssl/private;
+  DHP_OK=$?;
+  if [ ${DHP_OK} ]; then
+    echo -e "
+      Installed Diffie-Hellman parameters.
+    --------------------------------------------------
+    "
+  else
+    echo -e "
+      * * * FAILED TO INSTALL DIFFIE-HELLMAN PARAMETERS * * *
+    --------------------------------------------------
+    ";
+    # exit 1;
   fi;
 
   echo -e "${PRTY} Substituting Nginx configuration file ." | tee -a ${LOG};
