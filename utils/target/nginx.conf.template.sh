@@ -26,17 +26,26 @@ http {
     gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml;
     gzip_disable "MSIE [1-6]\.";
 
-    # ssl_password_file /home/hab/.ssh/deploy_vault/global.pass;
+    server_tokens off;
 
-    # server {
-    #     listen       80;
-    #     server_name  ${VIRTUAL_HOST_DOMAIN_NAME};
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:!aNULL:!MD5:!DSS';
 
-    #     location / {
-    #         root   /etc/nginx/www-data/;
-    #         index  index.html index.htm;
-    #     }
-    # }
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+    add_header Content-Security-Policy "
+      default-src 'self';
+      script-src 'self';
+      img-src 'self';
+      style-src 'self';
+      font-src 'self' https://themes.googleusercontent.com;
+      child-src 'none';
+      object-src 'none'";
+
+    add_header 'Referrer-Policy' 'no-referrer';
+    add_header 'X-Powered-By' '';
+    add_header 'Server' '';
 
     include /etc/nginx/sites-enabled/*;
 

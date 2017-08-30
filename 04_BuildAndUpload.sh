@@ -64,8 +64,10 @@ function setupTargetServer() {
 
 ssh -t -oStrictHostKeyChecking=no -oBatchMode=yes -l "${DEPLOY_USER}" "${TARGET_SRVR}" whoami;
 echo -e "${PRETTY}Tested '${DEPLOY_USER}' user SSH to host '${TARGET_SRVR}'.";
-
+echo -e "${PRETTY} Idempotency command throws error on first run ...";
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.nvm/nvm.sh && nvm use --delete-prefix v4.8.3 --silent";
+echo -e "${PRETTY} ... above error (if any) can be ignored.";
+
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && sudo -A touch /opt/delete_me" || exit 1;
 echo -e "${PRETTY}Tested sudo ASK_PASS for '${DEPLOY_USER}'@'${TARGET_SRVR}'.";
 

@@ -197,10 +197,9 @@ source ${ENVIRONMENT};
 # ----------------
 echo -e "${PRTY} Testing Diffie-Hellman parameters file availability... [   ls \"${DH_PARAMS_DIR}\"  ]";
 if [[ "X${DH_PARAMS_DIR}X" = "XX" ]]; then errorDHParamsFileSpecified "null"; fi;
-if [ ! -d "${DH_PARAMS_DIR}" ]; then errorDHParamsFileSpecified "${DH_PARAMS_DIR}"; fi;
-echo -e "${PRTY} Got $(head -n 2 ${DH_PARAMS_DIR})
+if [ ! -d ${DH_PARAMS_DIR} ]; then errorDHParamsFileSpecified "${DH_PARAMS_DIR}"; fi;
+echo -e "${PRTY} Got $(head -n 2 ${DH_PARAMS_DIR}/dhparams_4096.pem)
 ";
-
 
 # ----------------
 echo -e "${PRTY} Testing server presence using... [   ping -c 1 ${TARGET_SRVR};   ]";

@@ -15,6 +15,9 @@ function initialSecurityTasks() {
   sudo -A ufw allow out https;
   sudo -A ufw allow in https;
 
+  sudo ufw allow 123/udp
+  sudo ufw allow out 123/udp
+
   sudo -A ufw allow out 53/tcp;
   sudo -A ufw allow out 53,67,68/udp
 
@@ -143,6 +146,13 @@ pushd ${SCRIPTPATH};
     echo -e "ERROR : SUDO_ASKPASS doesn't work.  Is the password correct for : '$(whoami)'"  | tee -a ${LOG};
     exit 1;
   fi;
+
+  echo -e "${PRTY} Tightening up SSH security..."  | tee -a ${LOG};
+  ./tightenSSHD.sh;
+  sudo -A tail -n 8 /etc/ssh/sshd_config;
+  echo -e "...tightened SSH security!
+
+  "  | tee -a ${LOG};
 
   echo -e "${PRTY} Installing MariaDB  . . . . . "  | tee -a ${LOG};
   ./mysql/installAndSecureMariaDB.sh;
