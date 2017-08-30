@@ -6,7 +6,7 @@ const structure = {
 const knexConfig = {
   client: 'mysql',
   connection: {
-    host: 'irid.blue',
+    host: 'db_srv',
     user: 'meteor',
     password: 'MemorableHieroglyphs+2-1-1',
     database: 'meteor_data'
@@ -63,7 +63,24 @@ const sourceTables = [
         entrega_lines_id: { db: 'item_id', orm: 'itemId' },
         entrega_id: { db: 'fk_delivery', orm: 'fkDelivery' },
         cod: { db: 'code', orm: 'code' }
-      }
+      },
+      insert:
+       `INSERT INTO delivery_item (
+           item_id
+         , fk_delivery
+         , code
+         , createdAt
+         , updatedAt
+         , deletedAt )
+        SELECT
+           l.entrega_lines_id as item_id
+         , l.entrega_id as fk_delivery
+         , l.cod as code
+         , e.date_entrega as createdAt
+         , e.date_entrega as updatedAt
+         , null
+        FROM tb_entregas_lines l, tb_entregas e
+        WHERE l.entrega_id = e.entrega_id`
     },
     srvrUnitTest: {
       expected: 'IBAA001',

@@ -338,6 +338,7 @@ const Mutations = \`
 const Types = \`
 
     type ${mods.alias.u} {${dataTypeTemplate(tbl, queries, nameMap)}
+      createdAt: DateTime
       updatedAt: DateTime
       deletedAt: DateTime
     }

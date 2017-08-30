@@ -3,10 +3,10 @@ import { RDBMS as sequelize } from '../../api/meteorDependencies.js';
 
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
 const entity = '${settings.module.alias.u}';
-const tblLegacy = '${settings.module.name}';
-const attrLegacy = '${ settings.module.sequelize.attrLegacy }';
-const tblTarget = '${settings.module.alias.o}';
-const attrTarget = '${ settings.module.sequelize.attrTarget }';
+// const tblLegacy = '${settings.module.name}';
+// const attrLegacy = '${ settings.module.sequelize.attrLegacy }';
+// const tblTarget = '${settings.module.alias.o}';
+// const attrTarget = '${ settings.module.sequelize.attrTarget }';
 module.exports = function () {
 
   return ${settings.module.alias.u}.findAll({
@@ -18,10 +18,7 @@ module.exports = function () {
       LG('Migrating data into table "%s".', entity );
       return sequelize.query(
         /* eslint-disable quotes */
-        `INSERT INTO ` + tblTarget +
-         ` ( ` + attrTarget + `, createdAt, updatedAt )
-           SELECT ` + attrLegacy + `, createdAt, createdAt as updatedAt
-           FROM  ` + tblLegacy,
+        `${settings.module.sequelize.insert}`,
         { type: sequelize.QueryTypes.INSERT }
         /* eslint-enable quotes  */
       ).then( rpt => {

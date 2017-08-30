@@ -28,15 +28,15 @@ http {
 
     # ssl_password_file /home/hab/.ssh/deploy_vault/global.pass;
 
-    server {
-        listen       80;
-        server_name  ${VIRTUAL_HOST_DOMAIN_NAME};
+    # server {
+    #     listen       80;
+    #     server_name  ${VIRTUAL_HOST_DOMAIN_NAME};
 
-        location / {
-            root   /etc/nginx/www-data/;
-            index  index.html index.htm;
-        }
-    }
+    #     location / {
+    #         root   /etc/nginx/www-data/;
+    #         index  index.html index.htm;
+    #     }
+    # }
 
     include /etc/nginx/sites-enabled/*;
 
