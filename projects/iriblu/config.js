@@ -186,6 +186,156 @@ const sourceTables = [
       u: 'Partner',
       tl: 'partner',
       tu: 'Partner'
+    },
+    sequelize: {
+      attributeNameMap: {
+        partner_id: { db: 'partner_id', orm: 'partnerId' },
+        partner_name: { db: 'partner_name', orm: 'partnerName' },
+        partner_company: { db: 'is_corporate', orm: 'isCorporate' },
+        partner_client: { db: 'is_client', orm: 'isClient' },
+        partner_supplier: { db: 'is_supplier', orm: 'isSupplier' },
+        partner_civil_status: { db: 'civil_status', orm: 'civilStatus' },
+        partner_gender: { db: 'gender', orm: 'gender' },
+        partner_nationality: { db: 'nationality', orm: 'nationality' },
+        partner_legal_id: { db: 'citizen_id', orm: 'citizenId' },
+        partner_group_code: { db: 'group_code', orm: 'groupCode' },
+        partner_telf_primary: { db: 'phone_primary', orm: 'phonePrimary' },
+        partner_telf_secundary: { db: 'phone_secondary', orm: 'phoneSecondary' },
+        partner_celular_phone: { db: 'phone_mobile', orm: 'phoneMobile' },
+        partner_email: { db: 'email', orm: 'email' },
+        partner_webPage: { db: 'web_site', orm: 'webSite' },
+        partner_contact_person: { db: 'contact_person', orm: 'contactPerson' },
+        partner_notes: { db: 'notes', orm: 'notes' },
+        partner_sales_person: { db: 'sales_rep', orm: 'salesRep' },
+        partner_status: { db: 'status', orm: 'status' },
+        partner_create_by: { db: 'created_by', orm: 'createdBy' },
+        partner_creation_date: { db: 'createdAt', orm: 'createdAt' },
+        partner_last_update: { db: 'updatedAt', orm: 'updatedAt' },
+        partner_country_acc: { db: 'delivery_country', orm: 'deliveryCountry' },
+        partner_state_acc: { db: 'delivery_state', orm: 'deliveryState' },
+        partner_city_acc: { db: 'delivery_city', orm: 'deliveryCity' },
+        partner_canton_acc: { db: 'delivery_county', orm: 'deliveryCounty' },
+        partner_parish_acc: { db: 'delivery_parish', orm: 'deliveryParish' },
+        partner_postal_code_acc: { db: 'delivery_postal_code', orm: 'deliveryPostalCode' },
+        street_acc: { db: 'delivery_street', orm: 'deliveryStreet' },
+        bulding_acc: { db: 'delivery_street_no', orm: 'deliveryStreetNo' },
+        country_res: { db: 'residence_country', orm: 'residenceCountry' },
+        state_res: { db: 'residence_state', orm: 'residenceState' },
+        city_res: { db: 'residence_city', orm: 'residenceCity' },
+        canton_res: { db: 'residence_county', orm: 'residenceCounty' },
+        parish_res: { db: 'residence_parish', orm: 'residenceParish' },
+        postal_code_res: { db: 'residence_postal_code', orm: 'residencePostalCode' },
+        street_res: { db: 'residence_street', orm: 'residenceStreet' },
+        bulding_res: { db: 'residence_street_no', orm: 'residenceStreetNo' }
+      },
+      insert:
+       `INSERT INTO partner (
+           partner_id
+         , partner_name
+         , is_corporate
+         , is_client
+         , is_supplier
+         , civil_status
+         , gender
+         , nationality
+         , citizen_id
+         , group_code
+         , phone_primary
+         , phone_secondary
+         , phone_mobile
+         , email
+         , web_site
+         , contact_person
+         , notes
+         , sales_rep
+         , status
+         , created_by
+         , createdAt
+         , updatedAt
+         , delivery_country
+         , delivery_state
+         , delivery_city
+         , delivery_county
+         , delivery_parish
+         , delivery_postal_code
+         , delivery_street
+         , delivery_street_no
+         , residence_country
+         , residence_state
+         , residence_city
+         , residence_county
+         , residence_parish
+         , residence_postal_code
+         , residence_street
+         , residence_street_no )
+        SELECT
+           p.partner_id as partner_id
+         , p.partner_name as partner_name
+         , p.partner_company as is_corporate
+         , p.partner_client as is_client
+         , p.partner_supplier as is_supplier
+         , p.partner_civil_status as civil_status
+         , p.partner_gender as gender
+         , p.partner_nationality as nationality
+         , p.partner_legal_id as citizen_id
+         , p.partner_group_code as group_code
+         , p.partner_telf_primary as phone_primary
+         , p.partner_telf_secundary as phone_secondary
+         , p.partner_celular_phone as phone_mobile
+         , p.partner_email as email
+         , p.partner_webPage as web_site
+         , p.partner_contact_person as contact_person
+         , p.partner_notes as notes
+         , p.partner_sales_person as sales_rep
+         , p.partner_status as status
+         , p.partner_create_by as created_by
+         , p.partner_creation_date as createdAt
+         , p.partner_last_update as updatedAt
+         , p.partner_country_acc as delivery_country
+         , p.partner_state_acc as delivery_state
+         , p.partner_city_acc as delivery_city
+         , p.partner_canton_acc as delivery_county
+         , p.partner_parish_acc as delivery_parish
+         , p.partner_postal_code_acc as delivery_postal_code
+         , p.street_acc as delivery_street
+         , p.bulding_acc as delivery_street_no
+         , p.country_res as residence_country
+         , p.state_res as residence_state
+         , p.city_res as residence_city
+         , p.canton_res as residence_county
+         , p.parish_res as residence_parish
+         , p.postal_code_res as residence_postal_code
+         , p.street_res as residence_street
+         , p.bulding_res as residence_street_no
+        FROM tb_partners p`
+    },
+    srvrUnitTest: {
+      expected: 'IBAA001',
+      colExpected: 2,
+    },
+    resolvers: {
+      mainName: 'email',
+      createParms: [ 2, 3 ]
+    },
+    typeDef: {
+      queries: {
+        note: 'The items of the delivery note "fkDelivery"',
+        noteCols: [ 1, 2, 3, 4 ],
+        cols: [ 1, 2, 3, 4 ],
+      },
+      mutations: {
+        colsCreate: [ 2, 3 ],
+        colsCreateVar: [ 3, '"IBIB004"' ],
+        colsCreateRsvp: [ 1, 3 ],
+        colsHide: [ 1 ],
+        colsHideVar: [ 3 ],
+        colsHideRsvp: [ 2 ],
+        colsUpdate: [ 1, 2, 3 ],
+        colsUpdateVar: [ 999, 444, '"Izzz004"' ],
+        colsUpdateRsvp: [ 1, 2, 3 ],
+        colsUpdateReqd: [ '!', '', '' ],
+      },
+      types: ''
     }
   },
   {

@@ -33,7 +33,7 @@ module.exports = function ( args ) {
   .then(function (values) {
 
     // LG(' --- Preparing Sequelize Models ----- : ', model.alias.u);
-    // // LG( values  );
+    // LG( values  );
     // LG(' -------------------- ');
     // LG( tmplt(values, model) );
     // LG(' --------- Writing to :: ', target);

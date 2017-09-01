@@ -24,6 +24,17 @@ To contnue, you must install NodeJS v6.  Run "nvm use 6".
 `, process.version );
       process.exit();
     } else {
+      LG(`       < ------------------- >
+
+
+
+
+
+
+        Starting ...
+
+        `
+      );
       LG('Will transform the RDBMS schema, specified in "'
         , argv.project, '", to the source code files for ' +
         'a Meteor, React, Sequelize and Apollo GraphQL application. '

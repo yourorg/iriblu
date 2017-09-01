@@ -4,36 +4,6 @@ const { mapDataType, mapSubstitution } = require('./utils');
 
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
 
-// var mapPartialReplace = {
-//   int: 'DataTypes.INTEGER',
-//   varchar: 'DataTypes.STRING',
-//   char: 'DataTypes.CHAR',
-//   datetime: 'DataTypes.DATE',
-// };
-
-// var mapFullReplace = {
-//   timestamp: `'TIMESTAMP'`,
-// };
-
-// function mapDataType(aType) {
-//   var rgx = '';
-//   rgx = aType
-//   .replace(/(?:[A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
-//     // LG( 'index : ' + index + ', match : ' + match );
-//     return mapPartialReplace[match];
-//   });
-//   // LG( ' GOT "%s".', rgx );
-//   if ( rgx === 'undefined' ) {
-
-//     rgx = aType
-//     .replace(/([A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
-//       // LG( 'index : ' + index + ', match : ' + match );
-//       return mapFullReplace[match];
-//     });
-//   }
-//   return rgx;
-// }
-
 function htmlEscape(str) {
   return str.replace(/&/g, '&amp;') // first!
             .replace(/>/g, '&gt;')
@@ -122,7 +92,7 @@ module.exports = function (sequelize, DataTypes) {
     paranoid: true,
   });
 
-  return DeliveryItem;
+  return ${mods.alias.u};
 };
 `;
 

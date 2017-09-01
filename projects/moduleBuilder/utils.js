@@ -123,6 +123,7 @@ function substitute(templateObject, ...substitutions) {
 
 
 var mapPartialReplace = {
+  tinyint: 'DataTypes.INTEGER',
   int: 'DataTypes.INTEGER',
   varchar: 'DataTypes.STRING',
   char: 'DataTypes.CHAR',

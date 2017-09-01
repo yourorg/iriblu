@@ -14,7 +14,7 @@ module.exports = function () {
       module: table,
       config,
     };
-    if( idx === 3 ) {
+    if( [ 3, 10 ].includes(idx) ) {
       bldr(settings);
     } else {
       LG( '#%s TABLE :: %s', idx, table.name );

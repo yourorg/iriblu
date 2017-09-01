@@ -12,6 +12,7 @@ const tasks = [
   lib,
   server,
 ];
+
 module.exports = function (module) {
   tasks.forEach( task => task(module) );
 };

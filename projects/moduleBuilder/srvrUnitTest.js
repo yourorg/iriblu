@@ -48,7 +48,7 @@ module.exports = function ( args ) {
     // LG(' <<-------------------------- >> ');
     // LG( tmplt(project, aTable, model) );
 
-    LG(' ---------- Writing to :: ', target);
+    // LG(' ---------- Writing to :: ', target);
     fs.writeFile(
       target,
       tmplt(project, aTable, model),

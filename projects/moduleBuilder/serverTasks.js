@@ -44,6 +44,15 @@ module.exports = function (settings) {
   transform(parameters);
 
 // -----------------------------------------------------
+  parameters.file = 'tblSqlzr.js';
+  LG('   - Generate sequelizer specification : %s',
+    parameters.file,
+    parameters.destination
+  );
+  sqlze(parameters);
+  // transform(parameters);
+
+// -----------------------------------------------------
   parameters.file = 'migration.js';
   LG('   - Generate migrations : %s',
     parameters.file,
@@ -58,15 +67,6 @@ module.exports = function (settings) {
     parameters.destination
   );
   rslvrs(parameters);
-
-// -----------------------------------------------------
-  parameters.file = 'tblSqlzr.js';
-  LG('   - Generate sequelizer specification : %s',
-    parameters.file,
-    parameters.destination
-  );
-  sqlze(parameters);
-  // transform(parameters);
 
 // -----------------------------------------------------
   parameters.file = 'unit.js';
