@@ -327,10 +327,12 @@ function typeDefinitionTemplate( tbl, mods ) {
     ####  Query example :
     #    {
     #      get${mods.alias.u}(${mapSubstitution(
-              attrPK.column_name, nameMap, 'orm')}: 1) {${queryCommentTemplate(tbl, queries, nameMap)}
+              attrPK.column_name, nameMap, 'orm')}: 1, offset: 0, limit: 10) {${queryCommentTemplate(tbl, queries, nameMap)}
     #      }
     #    }
-    get${mods.alias.u}(${querySpecificationTemplate(tbl, queries, nameMap)}
+    get${mods.alias.u}(
+      offset: Int,
+      limit : Int,${querySpecificationTemplate(tbl, queries, nameMap)}
     ): [${mods.alias.u}]
 \`;
 

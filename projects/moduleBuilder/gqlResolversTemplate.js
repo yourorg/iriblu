@@ -35,8 +35,14 @@ const resolvers = {
   Queries: {
     get${mods.alias.u}(_, args) {
       // LG('${mods.alias.u} :: ', ${mods.alias.u});
+      let parms = {};
+      parms.limit = args.limit;
+      delete args.limit;
+      parms.offset = args.offset;
+      delete args.offset;
+      parms.where = args;
       LG('${mods.alias.u} :: ', args);
-      let res = ${mods.alias.u}.findAll({ where: args });
+      let res = ${mods.alias.u}.findAll( parms );
       // LG('return :: ', res);
       return res;
     }
