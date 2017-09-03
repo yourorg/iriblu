@@ -22,7 +22,7 @@ function typeDefinitionTemplate( prj, tbl, mods ) {
   // LG('===================================================');
   var queries = mods.typeDef.queries;
   // var mutations = mods.typeDef.mutations;
-  var nameMap = mods.sequelize.attributeNameMap;
+  var nameMap = mods.sequelize.attrAdaptationMap;
   var attrPK = getPrimaryKeyColumn(tbl);
   var typeDefs = `import ${mods.alias.c}` +
   ` from '../../${prj}_${mods.alias.l}';

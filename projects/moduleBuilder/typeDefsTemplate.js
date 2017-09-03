@@ -1,16 +1,19 @@
 'use strict';
 // const { camelize, titleCase, spacedLower, noWhite } = require('./utils');
-const { camelize, substitute, mapSubstitution, getPrimaryKeyColumn } = require('./utils');
+const { camelize, sentenceCase, substitute, mapSubstitution, getPrimaryKeyColumn } = require('./utils');
 
 const LG = console.log; // eslint-disable-line no-console,no-unused-vars
 
 var mapReplace = {
   int: 'Int',
+  tinyint: 'Int',
   varchar: 'String',
   char: 'String',
   datetime: 'Date',
   timestamp: 'DateTime',
 };
+
+var specials = [ 'createdAt', 'updatedAt', 'deletedAt' ];
 
   // .replace(/([A-Za-z]+)/g, function ( match, index) {  // eslint-disable-line no-unused-vars
   //   // LG( 'aType : ' + aType + ' --> +index : ' + index + ', match : ' + match + ' ==>> ' + ret );
@@ -87,11 +90,14 @@ const mapType = aType => aType
 
 const dataTypeTemplate = ( attrs, queries, nameMap ) => {
   return substitute`${attrs.map(attr => {
-    if ( queries.cols.includes( attr.ordinal_position ) ) {
+
+    if ( specials.includes( `${mapSubstitution(attr.column_name, nameMap, 'orm')}` ) ) {
+      return ``;
+    } else {
       return substitute`
-      !${mapSubstitution(attr.column_name, nameMap, 'orm')}: ${mapType(attr.column_type)}`;
+      #  !${sentenceCase(mapSubstitution(attr.column_name, nameMap, 'db'))}
+        !${mapSubstitution(attr.column_name, nameMap, 'orm')}: ${mapType(attr.column_type)}`;
     }
-    return '';
   }
   )}`;
 };
@@ -120,14 +126,19 @@ const queryCommentTemplate = ( attrs, queries, nameMap ) => {
 
 
 const mutCreateArgsTemplate = ( attrs, mutations, nameMap ) => {
-  let spc = '';
+  let len = 0;
+  attrs.map(attr => {
+    if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
+      len++;
+    }
+  })
   let arg = ``;
   return substitute`${attrs.map(attr => {
     if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
-      arg = substitute`${spc}$!${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+      arg = substitute`
+  #      $!${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
                        ` ${mapType(attr.column_type)}` +
-                       `${attr.is_nullable === 'NO' ? '!' : ''}`;
-      spc = ', ';
+                       `${attr.is_nullable === 'NO' ? '!' : ''}${ --len > 0 ? ',' : ''}`;
       return arg;
     }
     return '';
@@ -136,13 +147,18 @@ const mutCreateArgsTemplate = ( attrs, mutations, nameMap ) => {
 };
 
 const mutCreateCallTemplate = ( attrs, mutations, nameMap ) => {
-  let spc = '';
+  let len = 0;
+  attrs.map(attr => {
+    if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
+      len++;
+    }
+  })
   let arg = ``;
   return substitute`${attrs.map(attr => {
     if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
-      arg = substitute`${spc}${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
-                       ` $${mapSubstitution(attr.column_name, nameMap, 'orm')}`;
-      spc = ', ';
+      arg = substitute`
+  #        ${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+                       ` $${mapSubstitution(attr.column_name, nameMap, 'orm')}${ --len > 0 ? ',' : ''}`;
       return arg;
     }
     return '';
@@ -162,12 +178,18 @@ const mutCreateRespTemplate = ( attrs, mutations, nameMap ) => {
 };
 
 const mutCreateVarsTemplate = ( attrs, mutations, nameMap ) => {
+  let len = 0;
   let idx = 0;
+  attrs.map(attr => {
+    if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
+      len++;
+    }
+  })
   return substitute`${attrs.map(attr => {
     if ( mutations.colsCreate.includes( attr.ordinal_position ) ) {
       return substitute`
   #       "!${mapSubstitution(attr.column_name, nameMap, 'orm')}":` +
-` ${mutations.colsCreateVar[idx++]},`;
+` ${mutations.colsCreateVar[idx++]}${ --len > 0 ? ',' : ''}`;
     }
     return '';
   }
@@ -187,12 +209,18 @@ const mutCreateMethodTemplate = ( attrs, mutations, nameMap ) => {
 };
 
 const mutHideVarsTemplate = ( attrs, mutations, nameMap ) => {
+  let len = 0;
+  attrs.map(attr => {
+    if ( mutations.colsHide.includes( attr.ordinal_position ) ) {
+      len++;
+    }
+  })
   let idx = 0;
   return substitute`${attrs.map(attr => {
     if ( mutations.colsHide.includes( attr.ordinal_position ) ) {
       return substitute`
   #       "!${mapSubstitution(attr.column_name, nameMap, 'orm')}":` +
-` ${mutations.colsHideVar[idx++]},`;
+` ${mutations.colsHideVar[idx++]}${ --len > 0 ? ',' : ''}`;
     }
     return '';
   }
@@ -200,14 +228,19 @@ const mutHideVarsTemplate = ( attrs, mutations, nameMap ) => {
 };
 
 const mutUpdateArgsTemplate = ( attrs, mutations, nameMap ) => {
-  let spc = '';
+  let len = 0;
+  attrs.map(attr => {
+    if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
+      len++;
+    }
+  })
   let arg = ``;
   return substitute`${attrs.map(attr => {
     if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
-      arg = substitute`${spc}$!${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+      arg = substitute`
+  #      $!${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
                        ` ${mapType(attr.column_type)}` +
-                       `${attr.is_nullable === 'NO' ? '!' : ''}`;
-      spc = ', ';
+                       `${attr.is_nullable === 'NO' ? '!' : ''}${ len-- > 0 ? ',' : ''}`;
       return arg;
     }
     return '';
@@ -216,13 +249,18 @@ const mutUpdateArgsTemplate = ( attrs, mutations, nameMap ) => {
 };
 
 const mutUpdateCallTemplate = ( attrs, mutations, nameMap ) => {
-  let spc = '';
+  let len = 0;
+  attrs.map(attr => {
+    if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
+      len++;
+    }
+  })
   let arg = ``;
   return substitute`${attrs.map(attr => {
     if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
-      arg = substitute`${spc}${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
-                       ` $${mapSubstitution(attr.column_name, nameMap, 'orm')}`;
-      spc = ', ';
+      arg = substitute`
+  #        ${mapSubstitution(attr.column_name, nameMap, 'orm')}:` +
+                       ` $${mapSubstitution(attr.column_name, nameMap, 'orm')}${ len-- > 0 ? ',' : ''}`;
       return arg;
     }
     return '';
@@ -242,12 +280,18 @@ const mutUpdateRespTemplate = ( attrs, mutations, nameMap ) => {
 };
 
 const mutUpdateVarsTemplate = ( attrs, mutations, nameMap ) => {
+  let len = 0;
+  attrs.map(attr => {
+    if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
+      len++;
+    }
+  })
   let idx = 0;
   return substitute`${attrs.map(attr => {
     if ( mutations.colsUpdate.includes( attr.ordinal_position ) ) {
       return substitute`
   #       "!${mapSubstitution(attr.column_name, nameMap, 'orm')}":` +
-` ${mutations.colsUpdateVar[idx++]},`;
+` ${mutations.colsUpdateVar[idx++]}${ --len > 0 ? ',' : ''}`;
     }
     return '';
   }
@@ -276,10 +320,10 @@ function typeDefinitionTemplate( tbl, mods ) {
   // LG('===================================================');
   var queries = mods.typeDef.queries;
   var mutations = mods.typeDef.mutations;
-  var nameMap = mods.sequelize.attributeNameMap;
+  var nameMap = mods.sequelize.attrAdaptationMap;
   var attrPK = getPrimaryKeyColumn(tbl);
   var typeDefs = `const Queries = \`
-    ###  The items of the delivery note related by 'fkDelivery'.
+    ###  ${mods.typeDef.queries.note}.
     ####  Query example :
     #    {
     #      get${mods.alias.u}(${mapSubstitution(
@@ -294,8 +338,10 @@ const Mutations = \`
 
   ### Mutations
   #### Create ${mods.alias.tu}
-  #    mutation create${mods.alias.u}(${mutCreateArgsTemplate(tbl, mutations, nameMap)}) {
-  #      createDeliveryItem(${mutCreateCallTemplate(tbl, mutations, nameMap)}) {` +
+  #    mutation create${mods.alias.u}(${mutCreateArgsTemplate(tbl, mutations, nameMap)}
+  #    ) {
+  #      create${mods.alias.u}(${mutCreateCallTemplate(tbl, mutations, nameMap)}
+  #      ) {` +
 `${mutCreateRespTemplate(tbl, mutations, nameMap)}
   #      }
   #    }
@@ -318,12 +364,15 @@ const Mutations = \`
   #    {${mutHideVarsTemplate(tbl, mutations, nameMap)}
   #    }
   hide${mods.alias.u}(
-    itemId: Int!
+    ${mapSubstitution(attrPK.column_name, nameMap, 'orm')}:` +
+        ` ${mapType(attrPK.column_type)}${attrPK.is_nullable === 'NO' ? '!' : ''}
   ): ${mods.alias.u}
 
   #### Update ${mods.alias.tu}
-  #    mutation update${mods.alias.u}(${mutUpdateArgsTemplate(tbl, mutations, nameMap)}) {
-  #      updateDeliveryItem(${mutUpdateCallTemplate(tbl, mutations, nameMap)}) {` +
+  #    mutation update${mods.alias.u}(${mutUpdateArgsTemplate(tbl, mutations, nameMap)}
+  #    ) {
+  #      update${mods.alias.u}(${mutUpdateCallTemplate(tbl, mutations, nameMap)}
+  #      ) {` +
 `${mutUpdateRespTemplate(tbl, mutations, nameMap)}
   #      }
   #    }
@@ -338,9 +387,12 @@ const Mutations = \`
 const Types = \`
 
     type ${mods.alias.u} {${dataTypeTemplate(tbl, queries, nameMap)}
-      createdAt: DateTime
-      updatedAt: DateTime
-      deletedAt: DateTime
+      #  Creation date and time (automatic)
+         createdAt: DateTime
+      #  Last change date and time (automatic)
+         updatedAt: DateTime
+      #  Disabling date and time (automatic)
+         deletedAt: DateTime
     }
 \`;
 

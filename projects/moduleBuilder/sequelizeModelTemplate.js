@@ -52,6 +52,12 @@ function xfrm(templateObject, ...substitutions) {
   return result;
 }
 
+
+function isNullable(addr, mods) {
+  let specified = mods.sequelize.attrAdaptationMap[addr.column_name].null;
+  if ( specified ) return specified;
+  return addr.is_nullable === 'NO' ? 'false' : 'true';
+}
 // function mapSubstitute( val, map ) {
 //   var ret = map[val];
 //   if ( typeof ret === 'undefined' ) { return val; }
@@ -62,18 +68,16 @@ function xfrm(templateObject, ...substitutions) {
 const modelAttributeTemplate = (addrs, mods) =>
   xfrm`${addrs.map(addr =>
 xfrm`
-    ${mapSubstitution( addr.column_name, mods.sequelize.attributeNameMap, 'orm' )}: {
+    ${mapSubstitution( addr.column_name, mods.sequelize.attrAdaptationMap, 'orm' )}: {
       type: ${mapDataType(addr.column_type)},
-      allowNull: !${addr.is_nullable === 'NO' ?
-        'false' :
-        'true'},!${addr.column_key === 'PRI' ?
+      allowNull: ${isNullable(addr, mods)},!${addr.column_key === 'PRI' ?
         '\n      primaryKey: true,' :
         ''}!${addr.extra ?
           addr.extra.match('auto_increment') ?
           '\n      autoIncrement: true,' :
           '' :
           ''}
-      field: '${mapSubstitution( addr.column_name, mods.sequelize.attributeNameMap, 'db' )}',
+      field: '${mapSubstitution( addr.column_name, mods.sequelize.attrAdaptationMap, 'db' )}',
       comment: '!${addr.column_name}',
     },`)}`;
 /* eslint-enable max-len */

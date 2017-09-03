@@ -22,7 +22,7 @@ const transform = parms => {
 
   data.settings.module.sequelize.attrLegacy = [];
   data.settings.module.sequelize.attrTarget = [];
-  let map = data.settings.module.sequelize.attributeNameMap;
+  let map = data.settings.module.sequelize.attrAdaptationMap;
   let spc = '';
   for (const key of Object.keys(map)) {
     data.settings.module.sequelize.attrLegacy += spc + key;
@@ -73,6 +73,7 @@ const titleCase = str =>
 
 const spacedLower = text => text.replace(/_/g , ' ');
 const noWhite = text => text.replace(/ /g , '');
+const sentenceCase = text => spacedLower(titleCase(text));
 
 function htmlEscape(str) {
   return str.replace(/&/g, '&amp;') // first!
@@ -168,6 +169,7 @@ module.exports = {
   titleCase,
   spacedLower,
   noWhite,
+  sentenceCase,
   mapDataType,
   mapSubstitution,
   getPrimaryKeyColumn,

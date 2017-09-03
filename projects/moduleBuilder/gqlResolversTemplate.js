@@ -23,7 +23,7 @@ function typeDefinitionTemplate( prj, tbl, mods ) {
   // LG('===================================================');
   var resolvers = mods.resolvers;
   // var mutations = mods.typeDef.mutations;
-  var nameMap = mods.sequelize.attributeNameMap;
+  var nameMap = mods.sequelize.attrAdaptationMap;
   var attrPK = getPrimaryKeyColumn(tbl);
   var tmpltResolvers = `import ${mods.alias.u} from './attach';
 import Sequelize from 'sequelize';

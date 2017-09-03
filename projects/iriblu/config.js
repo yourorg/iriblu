@@ -59,10 +59,10 @@ const sourceTables = [
       tu: 'Delivery Item'
     },
     sequelize: {
-      attributeNameMap: {
-        entrega_lines_id: { db: 'item_id', orm: 'itemId' },
-        entrega_id: { db: 'fk_delivery', orm: 'fkDelivery' },
-        cod: { db: 'code', orm: 'code' }
+      attrAdaptationMap: {
+        entrega_lines_id: { op: 1, db: 'item_id', orm: 'itemId', null: '' },
+        entrega_id: { op: 2, db: 'fk_delivery', orm: 'fkDelivery', null: '' },
+        cod: { op: 3, db: 'code', orm: 'code', null: '' }
       },
       insert:
        `INSERT INTO delivery_item (
@@ -188,45 +188,45 @@ const sourceTables = [
       tu: 'Partner'
     },
     sequelize: {
-      attributeNameMap: {
-        partner_id: { db: 'partner_id', orm: 'partnerId' },
-        partner_name: { db: 'partner_name', orm: 'partnerName' },
-        partner_company: { db: 'is_corporate', orm: 'isCorporate' },
-        partner_client: { db: 'is_client', orm: 'isClient' },
-        partner_supplier: { db: 'is_supplier', orm: 'isSupplier' },
-        partner_civil_status: { db: 'civil_status', orm: 'civilStatus' },
-        partner_gender: { db: 'gender', orm: 'gender' },
-        partner_nationality: { db: 'nationality', orm: 'nationality' },
-        partner_legal_id: { db: 'citizen_id', orm: 'citizenId' },
-        partner_group_code: { db: 'group_code', orm: 'groupCode' },
-        partner_telf_primary: { db: 'phone_primary', orm: 'phonePrimary' },
-        partner_telf_secundary: { db: 'phone_secondary', orm: 'phoneSecondary' },
-        partner_celular_phone: { db: 'phone_mobile', orm: 'phoneMobile' },
-        partner_email: { db: 'email', orm: 'email' },
-        partner_webPage: { db: 'web_site', orm: 'webSite' },
-        partner_contact_person: { db: 'contact_person', orm: 'contactPerson' },
-        partner_notes: { db: 'notes', orm: 'notes' },
-        partner_sales_person: { db: 'sales_rep', orm: 'salesRep' },
-        partner_status: { db: 'status', orm: 'status' },
-        partner_create_by: { db: 'created_by', orm: 'createdBy' },
-        partner_creation_date: { db: 'createdAt', orm: 'createdAt' },
-        partner_last_update: { db: 'updatedAt', orm: 'updatedAt' },
-        partner_country_acc: { db: 'delivery_country', orm: 'deliveryCountry' },
-        partner_state_acc: { db: 'delivery_state', orm: 'deliveryState' },
-        partner_city_acc: { db: 'delivery_city', orm: 'deliveryCity' },
-        partner_canton_acc: { db: 'delivery_county', orm: 'deliveryCounty' },
-        partner_parish_acc: { db: 'delivery_parish', orm: 'deliveryParish' },
-        partner_postal_code_acc: { db: 'delivery_postal_code', orm: 'deliveryPostalCode' },
-        street_acc: { db: 'delivery_street', orm: 'deliveryStreet' },
-        bulding_acc: { db: 'delivery_street_no', orm: 'deliveryStreetNo' },
-        country_res: { db: 'residence_country', orm: 'residenceCountry' },
-        state_res: { db: 'residence_state', orm: 'residenceState' },
-        city_res: { db: 'residence_city', orm: 'residenceCity' },
-        canton_res: { db: 'residence_county', orm: 'residenceCounty' },
-        parish_res: { db: 'residence_parish', orm: 'residenceParish' },
-        postal_code_res: { db: 'residence_postal_code', orm: 'residencePostalCode' },
-        street_res: { db: 'residence_street', orm: 'residenceStreet' },
-        bulding_res: { db: 'residence_street_no', orm: 'residenceStreetNo' }
+      attrAdaptationMap: {
+        partner_id: { op: 1, db: 'partner_id', orm: 'partnerId', null: '' },
+        partner_name: { op: 2, db: 'partner_name', orm: 'partnerName', null: '' },
+        partner_company: { op: 3, db: 'is_corporate', orm: 'isCorporate', null: '' },
+        partner_client: { op: 4, db: 'is_client', orm: 'isClient', null: '' },
+        partner_supplier: { op: 5, db: 'is_supplier', orm: 'isSupplier', null: '' },
+        partner_civil_status: { op: 6, db: 'civil_status', orm: 'civilStatus', null: 'true' },
+        partner_gender: { op: 7, db: 'gender', orm: 'gender', null: 'true' },
+        partner_nationality: { op: 8, db: 'nationality', orm: 'nationality', null: 'true' },
+        partner_legal_id: { op: 9, db: 'citizen_id', orm: 'citizenId', null: 'true' },
+        partner_group_code: { op: 10, db: 'group_code', orm: 'groupCode', null: '' },
+        partner_telf_primary: { op: 11, db: 'phone_primary', orm: 'phonePrimary', null: '' },
+        partner_telf_secundary: { op: 12, db: 'phone_secondary', orm: 'phoneSecondary', null: '' },
+        partner_celular_phone: { op: 13, db: 'phone_mobile', orm: 'phoneMobile', null: '' },
+        partner_email: { op: 14, db: 'email', orm: 'email', null: '' },
+        partner_webPage: { op: 15, db: 'web_site', orm: 'webSite', null: '' },
+        partner_contact_person: { op: 16, db: 'contact_person', orm: 'contactPerson', null: '' },
+        partner_notes: { op: 17, db: 'notes', orm: 'notes', null: '' },
+        partner_sales_person: { op: 18, db: 'sales_rep', orm: 'salesRep', null: '' },
+        partner_status: { op: 19, db: 'status', orm: 'status', null: '' },
+        partner_create_by: { op: 20, db: 'created_by', orm: 'createdBy', null: '' },
+        partner_creation_date: { op: 21, db: 'createdAt', orm: 'createdAt', null: '' },
+        partner_last_update: { op: 22, db: 'updatedAt', orm: 'updatedAt', null: '' },
+        partner_country_acc: { op: 23, db: 'delivery_country', orm: 'deliveryCountry', null: '' },
+        partner_state_acc: { op: 24, db: 'delivery_state', orm: 'deliveryState', null: '' },
+        partner_city_acc: { op: 25, db: 'delivery_city', orm: 'deliveryCity', null: '' },
+        partner_canton_acc: { op: 26, db: 'delivery_county', orm: 'deliveryCounty', null: '' },
+        partner_parish_acc: { op: 24, db: 'delivery_parish', orm: 'deliveryParish', null: '' },
+        partner_postal_code_acc: { op: 28, db: 'delivery_postal_code', orm: 'deliveryPostalCode', null: '' },
+        street_acc: { op: 29, db: 'delivery_street', orm: 'deliveryStreet', null: '' },
+        bulding_acc: { op: 30, db: 'delivery_street_no', orm: 'deliveryStreetNo', null: '' },
+        country_res: { op: 31, db: 'residence_country', orm: 'residenceCountry', null: '' },
+        state_res: { op: 32, db: 'residence_state', orm: 'residenceState', null: '' },
+        city_res: { op: 33, db: 'residence_city', orm: 'residenceCity', null: '' },
+        canton_res: { op: 34, db: 'residence_county', orm: 'residenceCounty', null: '' },
+        parish_res: { op: 35, db: 'residence_parish', orm: 'residenceParish', null: '' },
+        postal_code_res: { op: 36, db: 'residence_postal_code', orm: 'residencePostalCode', null: '' },
+        street_res: { op: 37, db: 'residence_street', orm: 'residenceStreet', null: '' },
+        bulding_res: { op: 38, db: 'residence_street_no', orm: 'residenceStreetNo', null: '' }
       },
       insert:
        `INSERT INTO partner (
@@ -310,30 +310,32 @@ const sourceTables = [
         FROM tb_partners p`
     },
     srvrUnitTest: {
-      expected: 'IBAA001',
+      expected: 'Dashiel Hammet',
       colExpected: 2,
     },
     resolvers: {
       mainName: 'email',
-      createParms: [ 2, 3 ]
+      createParms: [ 2, 3, 4, 5, 9, 14, 19 ]
     },
     typeDef: {
       queries: {
-        note: 'The items of the delivery note "fkDelivery"',
-        noteCols: [ 1, 2, 3, 4 ],
-        cols: [ 1, 2, 3, 4 ],
+        note: 'Partner data',
+        noteCols: [ 1, 2, 3, 4, 5, 9, 14, 19 ],
+        cols: [ 1, 2, 3, 4, 5, 9, 14, 19 ],
       },
       mutations: {
-        colsCreate: [ 2, 3 ],
-        colsCreateVar: [ 3, '"IBIB004"' ],
-        colsCreateRsvp: [ 1, 3 ],
+        colsCreate: [ 2, 3, 4, 5, 9, 14, 19 ],
+        colsCreateVar: [ '"Dashiel Hammet"', '"Y"', '"Y"', '"Y"', '"171393141-6"', '"a@b.c"', '"A"' ],
+        colsCreateRsvp: [ 1, 2, 3, 4, 5, 9, 14, 19 ],
+
         colsHide: [ 1 ],
-        colsHideVar: [ 3 ],
-        colsHideRsvp: [ 2 ],
-        colsUpdate: [ 1, 2, 3 ],
-        colsUpdateVar: [ 999, 444, '"Izzz004"' ],
-        colsUpdateRsvp: [ 1, 2, 3 ],
-        colsUpdateReqd: [ '!', '', '' ],
+        colsHideVar: [ 565 ],
+        colsHideRsvp: [ 1 ],
+
+        colsUpdate: [ 1, 2, 3, 4, 5, 9, 14, 19 ],
+        colsUpdateVar: [ 654, '"Dashiel Hammet"', '"Y"', '"Y"', '"Y"', '"171393141-6"', '"a@b.c"', '"A"' ],
+        colsUpdateRsvp: [ 1, 2, 3, 4, 5, 9, 14, 19 ],
+        colsUpdateReqd: [ '!', '!', '!', '!', '!', '', '', '!' ],
       },
       types: ''
     }
