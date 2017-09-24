@@ -19,6 +19,7 @@ dpkg -s ${PURGE} &>/dev/null && sudo apt-get purge -y ${PURGE} || echo " - ${PUR
 
 export NVM_VERSION=$(curl -s https://api.github.com/repos/creationix/nvm/releases/latest | jq -r ".name");
 export NVM_INSTALLED=$(nvm --version);
+
 if [[  "${NVM_VERSION}" = "v${NVM_INSTALLED}"  ]]; then
   echo -e " - nvm '${NVM_VERSION}' is installed";
 else
@@ -29,16 +30,22 @@ else
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 fi;
 
-export NODE_VERSION=4;
+export NODE_VERSION=8;
 nvm ls ${NODE_VERSION} >/dev/null \
   && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
   || nvm install ${NODE_VERSION};
 
-export NODE_VERSION=6;
-nvm ls ${NODE_VERSION} >/dev/null \
-  && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
-  || nvm install ${NODE_VERSION};
+# export NODE_VERSION=4;
+# nvm ls ${NODE_VERSION} >/dev/null \
+#   && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
+#   || nvm install ${NODE_VERSION};
 
+# export NODE_VERSION=6;
+# nvm ls ${NODE_VERSION} >/dev/null \
+#   && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
+#   || nvm install ${NODE_VERSION};
+
+NVM_INSTALLED=$(nvm --version);
 
 echo -e "${PRETTY} Prepare 'mmks' ...";
 # rm -fr mmks;
@@ -82,8 +89,8 @@ pushd mmks &>/dev/null;
     echo -e "${PRETTY} preparing user variables ..."
     .scripts/preFlightCheck.sh || exit 1;
   fi;
-  echo -e "${PRETTY} install 'IriBlu' ...";
-  # read -n 1 -s -p "Press any key to continue";
+  echo -e "${PRETTY} Ready to install 'IriBlu' ...";
+  read -n 1 -s -p "Press any key to continue";
 
   ./install_all.sh;
 
