@@ -632,13 +632,14 @@ EOFM
 
 popd >/dev/null;
 
-echo -e "${PRTY} Installing NodeJS..." | tee -a ${LOG};
+echo -e "${PRTY} Installing Node Version Manager..." | tee -a ${LOG};
 export NVM_LATEST=$(curl -s https://api.github.com/repos/creationix/nvm/releases/latest |   jq --raw-output '.tag_name';);  echo ${NVM_LATEST};
 wget -qO- https://raw.githubusercontent.com/creationix/nvm/${NVM_LATEST}/install.sh | bash;
 export NVM_DIR="$HOME/.nvm";
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion";
 
+echo -e "${PRTY} Installing NodeJS 'v${METEOR_NODE_VERSION}'" | tee -a ${LOG};
 nvm install ${METEOR_NODE_VERSION};
 export NODE=$(which node);
 echo "NODE = ${NODE}";

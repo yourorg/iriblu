@@ -72,6 +72,9 @@ pushd ../${pkg_name} &>/dev/null;
     rm -fr ./.meteor/local;
     mkdir -p ./node_modules;
 
+    echo -e "${PRTY} Installing Node dependencies";
+    meteor npm install;
+
     echo -e "${PRTY} * * * FIXME * * *
 
     These steps should be generic !";
@@ -100,7 +103,9 @@ pushd ../${pkg_name} &>/dev/null;
 
     popd &>/dev/null;
 
-    meteor npm install;
+    echo -e "${PRTY} Fix package.json please";
+    read -n 1 -s -r -p "Press any key to continue"
+    # meteor npm install --save mmks_book mmks_widget mmks_layout;
 
     echo -e "${PRTY} Building AndroidAPK as ${APP_NAME}";
     BuildAndroidAPK;
