@@ -145,7 +145,7 @@ pushd .${TARGET_SCRIPTS} >/dev/null;
 popd >/dev/null;
 
 echo -e "${PRTY} Calling :: ssh ${DEPLOY_USER}@${TARGET_SRVR} \". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/${APP_INSTALLER}.sh\";";
-ssh ${DEPLOY_USER}@${TARGET_SRVR} ". .bash_login; nvm use --delete-prefix v4.8.3 --silent";
+# ssh ${DEPLOY_USER}@${TARGET_SRVR} ". .bash_login; nvm use --delete-prefix v4.8.3 --silent";
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/${APP_INSTALLER}.sh";
 
 

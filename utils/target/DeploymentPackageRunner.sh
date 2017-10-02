@@ -648,6 +648,20 @@ echo NODE_DIR=${NODE_DIR};
 chmod -R 755 $NODE_DIR/bin/*;
 sudo cp -r $NODE_DIR/{bin,lib,share} /usr/local/;
 
+
+
+echo -e "${PRTY} Installed NodeJS.  Versions are ::" | tee -a ${LOG};
+echo -e "${PRTY}   * nvm : $(nvm --version)" | tee -a ${LOG};
+echo -e "${PRTY}   * nnpm : $(npm --version)" | tee -a ${LOG};
+echo -e "${PRTY}   * node : $(node --version)" | tee -a ${LOG};
+pwd;
+echo -e ". ./DeploymentPkgInstallerScripts/nvmStarterMaker.sh
+makeNvmStarter ${DEPLOY_USER};
+";
+. ./DeploymentPkgInstallerScripts/nvmStarterMaker.sh
+makeNvmStarter ${DEPLOY_USER};
+
+
 declare SVC_NAME="meteor_node";
 declare SVC_FILE="${SVC_NAME}.service";
 declare SVC_PATH="/dev/shm/${SVC_FILE}";
@@ -658,9 +672,9 @@ cat ${SVC_PATH};
 sudo -A cp ${SVC_PATH} /etc/systemd/system;
 sudo -A systemctl enable ${SVC_FILE};
 
-echo -e "${PRTY} Setting .npm-global";
-mkdir -p ~/.npm-global;
-npm config set prefix "~/.npm-global";
+# echo -e "${PRTY} Setting .npm-global";
+# mkdir -p ~/.npm-global;
+# npm config set prefix "~/.npm-global";
 
 export METEOR_NODE_FLAG="####  Meteor - Node zone";
 export FLAG_START="${METEOR_NODE_FLAG} : starts ####";
