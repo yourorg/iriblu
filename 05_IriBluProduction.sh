@@ -72,6 +72,9 @@ pushd ../${pkg_name} &>/dev/null;
     rm -fr ./.meteor/local;
     mkdir -p ./node_modules;
 
+    echo -e "${PRTY} Should happen before linking and saving !";
+    meteor npm install;
+
     echo -e "${PRTY} * * * FIXME * * *
 
     These steps should be generic !";
@@ -99,8 +102,6 @@ pushd ../${pkg_name} &>/dev/null;
       cp -r ./mmks_widget/ ../node_modules/mmks_widget;
 
     popd &>/dev/null;
-
-    meteor npm install;
 
     echo -e "${PRTY} Building AndroidAPK as ${APP_NAME}";
     BuildAndroidAPK;
@@ -140,7 +141,7 @@ pushd .${TARGET_SCRIPTS} >/dev/null;
 popd >/dev/null;
 
 echo -e "${PRTY} Calling :: ssh ${DEPLOY_USER}@${TARGET_SRVR} \". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/${APP_INSTALLER}.sh\";";
-ssh ${DEPLOY_USER}@${TARGET_SRVR} ". .bash_login; nvm use --delete-prefix v4.8.3 --silent";
+ssh ${DEPLOY_USER}@${TARGET_SRVR} ". .bash_login; nvm use --delete-prefix v${METEOR_NODE_VERSION} --silent";
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/${APP_INSTALLER}.sh";
 
 
