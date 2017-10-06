@@ -82,7 +82,7 @@ pushd ../${pkg_name} &>/dev/null;
       pushd ./gitignored_mmks_book &>/dev/null;
         rm -fr dist;
         rm -fr node_modules;
-        meteor npm install
+        meteor npm install;
        popd &>/dev/null;
 
       pushd ./gitignored_mmks_layout/ &>/dev/null;
@@ -102,6 +102,8 @@ pushd ../${pkg_name} &>/dev/null;
       cp -r ./mmks_widget/ ../node_modules/mmks_widget;
 
     popd &>/dev/null;
+
+    npm-link-save mmks_book mmks_layout mmks_widget;
 
     echo -e "${PRTY} Building AndroidAPK as ${APP_NAME}";
     BuildAndroidAPK;
