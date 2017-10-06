@@ -49,6 +49,10 @@ if [[ ! -d ../mmks ]]; then
     git clone git@github.com:yourse1f-yourorg/mmks.git;
     pushd mmks &>/dev/null;
       git submodule update --init --recursive;
+      pushd mmks &>/dev/null;
+        git submodule update --init --recursive;
+        git checkout MongGraFuse;
+      popd &>/dev/null;
     popd &>/dev/null;
   popd &>/dev/null;
 else
