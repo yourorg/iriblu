@@ -41,14 +41,21 @@ nvm ls ${NODE_VERSION} >/dev/null \
 
 
 echo -e "${PRETTY} Prepare 'mmks' ...";
-# rm -fr mmks;
+rm -fr ./mmks;
+rm -fr ../mmks;
+rm -fr ../IriBlu;
 
 if [[ ! -d ../mmks ]]; then
   echo "../mmks not found. Cloning into parent directory.";
   pushd .. &>/dev/null;
     git clone git@github.com:yourse1f-yourorg/mmks.git;
     pushd mmks &>/dev/null;
-      git submodule update --init --recursive;
+      git checkout -b Sep23 3af6ac71dd48818c4b8f8d4ca7fa3e460bccfcfa
+      # git submodule update --init --recursive;
+      pushd meteor-mantra-kickstarter &>/dev/null;
+        git checkout -b Sep23 1b7814b14ad9c89521a3bf963fcdad3fc153ae1e
+        # git checkout MongGraFuse;
+      popd &>/dev/null;
     popd &>/dev/null;
   popd &>/dev/null;
 else
@@ -58,6 +65,11 @@ else
     git submodule update --recursive;
   popd &>/dev/null;
 fi;
+
+echo -e "${PRETTY} Add more pauses ..."
+node --version
+read -n 1 -s -p "Press any key to continue";
+
 
 echo -e "${PRETTY} copy in 'mmks' ..."
 cp -r ../mmks . 2>/dev/null;
