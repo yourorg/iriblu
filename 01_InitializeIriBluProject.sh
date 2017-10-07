@@ -34,12 +34,12 @@ fi;
 #   && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
 #   || nvm install ${NODE_VERSION};
 
-export NODE_VERSION=6;
+export NODE_VERSION=8.5;
 nvm ls ${NODE_VERSION} >/dev/null \
   && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
   || nvm install ${NODE_VERSION};
 
-nvm alias default 6;
+nvm alias default 8.5;
 nvm use default;
 nvm uninstall 4 2>/dev/null;
 
