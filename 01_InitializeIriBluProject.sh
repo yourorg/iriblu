@@ -29,19 +29,24 @@ else
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 fi;
 
-export NODE_VERSION=4;
-nvm ls ${NODE_VERSION} >/dev/null \
-  && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
-  || nvm install ${NODE_VERSION};
+# export NODE_VERSION=4;
+# nvm ls ${NODE_VERSION} >/dev/null \
+#   && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
+#   || nvm install ${NODE_VERSION};
 
 export NODE_VERSION=6;
 nvm ls ${NODE_VERSION} >/dev/null \
   && echo " - node '$( nvm version ${NODE_VERSION})' is installed" \
   || nvm install ${NODE_VERSION};
 
+nvm alias default 6;
+nvm use default;
+nvm uninstall 4 2>/dev/null;
 
 echo -e "${PRETTY} Prepare 'mmks' ...";
-# rm -fr mmks;
+rm -fr ./mmks;
+rm -fr ../mmks;
+rm -fr ../IriBlu;
 
 if [[ ! -d ../mmks ]]; then
   echo "../mmks not found. Cloning into parent directory.";
@@ -91,7 +96,7 @@ pushd mmks &>/dev/null;
     echo -e "${PRETTY} preparing user variables ..."
     .scripts/preFlightCheck.sh || exit 1;
   fi;
-  echo -e "${PRETTY} install 'IriBlu' ...";
+  echo -e "${PRETTY} Ready for chimp ' ...";
   node --version
   read -n 1 -s -p "Press any key to continue";
 
