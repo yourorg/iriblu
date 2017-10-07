@@ -112,8 +112,11 @@ echo -e "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
 };
 
+
 echo -e "${PRETTY} Get NVM settings ...";
-source ${HOME}/.profile;
+source utils/target/initNvmMaker.sh;
+initNvmMaker ${USER};
+source ${HOME}/.bash_login;
 
 pushd ../IriBluBuilt &>/dev/null;
 

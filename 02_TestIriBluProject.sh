@@ -22,7 +22,9 @@ function TestRun() {
 
 
   echo -e "${PRETTY} Get NVM settings ...";
-  source ${HOME}/.profile;
+  source utils/target/initNvmMaker.sh;
+  initNvmMaker ${USER};
+  source ${HOME}/.bash_login;
 
   echo -e "${PRETTY} purge test data base ...";
   mkdir -p /tmp/db;
