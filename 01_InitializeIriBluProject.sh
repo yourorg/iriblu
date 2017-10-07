@@ -51,7 +51,7 @@ if [[ ! -d ../mmks ]]; then
     git clone git@github.com:yourse1f-yourorg/mmks.git;
     pushd mmks &>/dev/null;
       git checkout -b Sep23 3af6ac71dd48818c4b8f8d4ca7fa3e460bccfcfa
-      # git submodule update --init --recursive;
+      git submodule update --init --recursive;
       pushd meteor-mantra-kickstarter &>/dev/null;
         git checkout -b Sep23 1b7814b14ad9c89521a3bf963fcdad3fc153ae1e
         # git checkout MongGraFuse;
@@ -96,7 +96,7 @@ pushd mmks &>/dev/null;
   fi;
   echo -e "${PRETTY} install 'IriBlu' ...";
   # read -n 1 -s -p "Press any key to continue";
-
+pwd;
   ./install_all.sh;
 
 popd &>/dev/null;
