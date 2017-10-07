@@ -20,6 +20,8 @@ function TestRun() {
   PROJECT_ROOT=${1}
   killMeteorProcess;
 
+  echo -e "${PRETTY} Force use of sudo in case Meteor in background asks for it.";
+  sudo ls /root 2>/dev/null;
 
   echo -e "${PRETTY} Get NVM settings ...";
   source utils/target/initNvmMaker.sh;
