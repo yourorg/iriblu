@@ -54,7 +54,6 @@ if [[ ! -d ../mmks ]]; then
       git submodule update --init --recursive;
       pushd meteor-mantra-kickstarter &>/dev/null;
         git checkout -b Sep23 1b7814b14ad9c89521a3bf963fcdad3fc153ae1e
-        # git checkout MongGraFuse;
       popd &>/dev/null;
     popd &>/dev/null;
   popd &>/dev/null;
