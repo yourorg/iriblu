@@ -15,6 +15,10 @@ export VHOST_ENV_VARS="${SCRIPTPATH}/vhost_env_vars.sh";
 source ${ENV_VARS};
 source ${STANDARD_ENV_VARS};
 
+echo -e "${PRETTY} Get NVM settings ...";
+source ${HOME}/.profile;
+
+
 declare TARGET_SCRIPTS="/utils/target";
 
 declare RAM_DISK=/dev/shm;

@@ -20,6 +20,10 @@ function TestRun() {
   PROJECT_ROOT=${1}
   killMeteorProcess;
 
+
+  echo -e "${PRETTY} Get NVM settings ...";
+  source ${HOME}/.profile;
+
   echo -e "${PRETTY} purge test data base ...";
   mkdir -p /tmp/db;
   rm -fr /tmp/db/mmks.sqlite;

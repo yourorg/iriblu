@@ -96,10 +96,6 @@ pushd mmks &>/dev/null;
     echo -e "${PRETTY} preparing user variables ..."
     .scripts/preFlightCheck.sh || exit 1;
   fi;
-  echo -e "${PRETTY} Ready for chimp ' ...";
-  node --version
-  read -n 1 -s -p "Press any key to continue";
-
   # read -n 1 -s -p "Press any key to continue";
 
   ./install_all.sh;

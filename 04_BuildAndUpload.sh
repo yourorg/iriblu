@@ -112,6 +112,9 @@ echo -e "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
 };
 
+echo -e "${PRETTY} Get NVM settings ...";
+source ${HOME}/.profile;
+
 pushd ../IriBluBuilt &>/dev/null;
 
   echo -e "${PRETTY} validate version bump number ...";
