@@ -49,7 +49,7 @@ if [[ ! -d ../mmks ]]; then
     git clone git@github.com:yourse1f-yourorg/mmks.git;
     pushd mmks &>/dev/null;
       git submodule update --init --recursive;
-      pushd mmks &>/dev/null;
+      pushd meteor-mantra-kickstarter &>/dev/null;
         git submodule update --init --recursive;
         git checkout MongGraFuse;
       popd &>/dev/null;
@@ -62,6 +62,11 @@ else
     git submodule update --recursive;
   popd &>/dev/null;
 fi;
+
+echo -e "${PRETTY} Add more pauses ..."
+node --version
+read -n 1 -s -p "Press any key to continue";
+
 
 echo -e "${PRETTY} copy in 'mmks' ..."
 cp -r ../mmks . 2>/dev/null;
@@ -87,6 +92,9 @@ pushd mmks &>/dev/null;
     .scripts/preFlightCheck.sh || exit 1;
   fi;
   echo -e "${PRETTY} install 'IriBlu' ...";
+  node --version
+  read -n 1 -s -p "Press any key to continue";
+
   # read -n 1 -s -p "Press any key to continue";
 
   ./install_all.sh;
