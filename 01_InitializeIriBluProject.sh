@@ -96,7 +96,7 @@ pushd mmks &>/dev/null;
   fi;
   echo -e "${PRETTY} install 'IriBlu' ...";
   # read -n 1 -s -p "Press any key to continue";
-pwd;
+
   ./install_all.sh;
 
 popd &>/dev/null;
