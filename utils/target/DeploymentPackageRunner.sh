@@ -630,14 +630,19 @@ EOFM
     ls -l;
   popd >/dev/null;
 
+  source ./initNvmMaker.sh;
+  initNvmMaker ${DEPLOY_USER};
+
 popd >/dev/null;
 
 echo -e "${PRTY} Installing NodeJS..." | tee -a ${LOG};
 export NVM_LATEST=$(curl -s https://api.github.com/repos/creationix/nvm/releases/latest |   jq --raw-output '.tag_name';);  echo ${NVM_LATEST};
 wget -qO- https://raw.githubusercontent.com/creationix/nvm/${NVM_LATEST}/install.sh | bash;
-export NVM_DIR="$HOME/.nvm";
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion";
+# export NVM_DIR="$HOME/.nvm";
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion";
+
+source ${HOME}/.bash_login;
 
 nvm install ${METEOR_NODE_VERSION};
 export NODE=$(which node);
@@ -646,6 +651,9 @@ export NODE_DIR=${NODE%/bin/node};
 echo NODE_DIR=${NODE_DIR};
 chmod -R 755 $NODE_DIR/bin/*;
 sudo cp -r $NODE_DIR/{bin,lib,share} /usr/local/;
+
+nvm use --delete-prefix v${METEOR_NODE_VERSION} --silent;
+
 
 declare SVC_NAME="meteor_node";
 declare SVC_FILE="${SVC_NAME}.service";
