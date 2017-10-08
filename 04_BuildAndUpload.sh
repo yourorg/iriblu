@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #
+declare START_TIME=$(date +%s);
 
 SCRIPT=$(readlink -f "$0");
 SCRIPTPATH=$(dirname "$SCRIPT");  # Where this script resides
@@ -148,6 +149,11 @@ pushd ../IriBluBuilt &>/dev/null;
   setupTargetServer;
 
 popd &>/dev/null;
+
+
+echo -e "
+Execution time :";
+date -d@$(expr $(date +%s) - $START_TIME) -u +%H:%M:%S;
 
 echo -e "${PRETTY}
  ... done!";

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #
+declare START_TIME=$(date +%s);
 declare PRETTY="~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nIRIBLU Deploy :: ";
 
 export CI=${CI:false};
@@ -82,6 +83,10 @@ source 02_TestIriBluProject.sh;
 echo -e "${PRETTY} test 'IriBluBuilt' project   ...";
 export PACKAGE_EXCLUSIONS="$(pwd)/packages/package_exclusions.json";
 TestRun ../IriBluBuilt;
+
+echo -e "
+Execution time :";
+date -d@$(expr $(date +%s) - $START_TIME) -u +%H:%M:%S;
 
 echo -e "|||||||||||||||||||||||||||||||||||||||||";
 exit;

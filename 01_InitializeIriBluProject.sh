@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #
+declare START_TIME=$(date +%s);
 declare PRETTY="~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nIRIBLU Initialize :: ";
 
 sudo ls >/dev/null;
@@ -99,3 +100,8 @@ pwd;
   ./install_all.sh;
 
 popd &>/dev/null;
+
+
+echo -e "
+Execution time :";
+date -d@$(expr $(date +%s) - $START_TIME) -u +%H:%M:%S;

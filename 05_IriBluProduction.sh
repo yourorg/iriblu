@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
+declare START_TIME=$(date +%s);
 declare PRTY="~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nIRIBLU Production :: ";
+
 function CURTAIL() {  return 0; }
 
 SCRIPT=$(readlink -f "$0");
@@ -150,6 +152,9 @@ echo -e "${PRTY} Calling :: ssh ${DEPLOY_USER}@${TARGET_SRVR} \". .bash_login &&
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". .bash_login; nvm use --delete-prefix v4.8.3 --silent";
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". .bash_login && ./${BUNDLE_DIRECTORY_NAME}/${APP_INSTALLER}.sh";
 
+echo -e "
+Execution time :";
+date -d@$(expr $(date +%s) - $START_TIME) -u +%H:%M:%S;
 
 echo -e "${PRTY}   All done.
 ...................................................................

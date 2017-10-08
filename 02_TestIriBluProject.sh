@@ -17,6 +17,8 @@ function killMeteorProcess()
 
 function TestRun() {
 
+  declare START_TIME=$(date +%s);
+
   PROJECT_ROOT=${1}
   killMeteorProcess;
 
@@ -65,6 +67,10 @@ function TestRun() {
   popd &>/dev/null;
 
   killMeteorProcess;
+
+  echo -e "
+  Tests Execution time :";
+  date -d@$(expr $(date +%s) - $START_TIME) -u +%H:%M:%S;
 
 }
 
