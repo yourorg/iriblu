@@ -43,8 +43,8 @@ nvm ls ${NODE_VERSION} >/dev/null \
 
 echo -e "${PRETTY} Prepare 'mmks' ...";
 rm -fr ./mmks;
-rm -fr ../mmks;
-rm -fr ../IriBlu;
+# rm -fr ../mmks;
+# rm -fr ../IriBlu;
 
 if [[ ! -d ../mmks ]]; then
   echo "../mmks not found. Cloning into parent directory.";
@@ -66,9 +66,9 @@ else
   popd &>/dev/null;
 fi;
 
-echo -e "${PRETTY} Add more pauses ..."
-node --version
-read -n 1 -s -p "Press any key to continue";
+# echo -e "${PRETTY} Add more pauses ..."
+# node --version
+# read -n 1 -s -p "Press any key to continue";
 
 
 echo -e "${PRETTY} copy in 'mmks' ..."
@@ -84,6 +84,8 @@ echo -e "${PRETTY} copy in our definitive packages ..."
 cp -r packages/* mmks/.pkgs;
 
 
+. ./standard_env_vars.sh;
+
 echo -e "${PRETTY} step into 'mmks' subdirectory  ..."
 pushd mmks &>/dev/null;
 
@@ -93,7 +95,12 @@ pushd mmks &>/dev/null;
   else
     echo -e "${PRETTY} preparing user variables ..."
     .scripts/preFlightCheck.sh || exit 1;
+    . ~/.userVars.sh;
   fi;
+  . ${SECRETS_PATH}/${HOST_SERVER_NAME}/secrets.sh;
+  echo " Specify Meteor Node version : ${METEOR_NODE_VERSION}";
+  nvm use ${METEOR_NODE_VERSION};
+
   echo -e "${PRETTY} install 'IriBlu' ...";
   # read -n 1 -s -p "Press any key to continue";
 
