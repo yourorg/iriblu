@@ -84,6 +84,11 @@ echo -e "
 ||||||||||||||||||||||||||||||||||||||||||||||";
 ssh ${DEPLOY_USER}@${TARGET_SRVR} ". ~/.bash_login && ~/DeploymentPkgInstallerScripts/DeploymentPackageRunner.sh";
 
+echo -e "
+Execution time :";
+date -d@$(expr $(date +%s) - $START_TIME) -u +%H:%M:%S;
+
+
 echo -e "||||||||||||||||||||||||||||||||||||||||||||||";
 exit;
 echo -e "      ** Done **
@@ -156,10 +161,6 @@ pushd ../IriBluBuilt &>/dev/null;
 
 popd &>/dev/null;
 
-
-echo -e "
-Execution time :";
-date -d@$(expr $(date +%s) - $START_TIME) -u +%H:%M:%S;
 
 echo -e "${PRETTY}
  ... done!";

@@ -81,6 +81,15 @@ pushd ../${pkg_name} &>/dev/null;
     rm -fr ./.meteor/local;
     mkdir -p ./node_modules;
 
+    echo -e "${PRTY} * * * FIXME * * *
+
+    All these steps should be generic !";
+    cat package.json | grep -v mmks_book | grep -v mmks_layout | grep -v mmks_widget > package.json;
+
+    nvm --version;
+    nvm use 4.8.3;
+    npm install -gy npm-link-save;
+
     echo -e "${PRTY} Should happen before linking and saving !";
     meteor npm install;
 
@@ -92,18 +101,21 @@ pushd ../${pkg_name} &>/dev/null;
         rm -fr dist;
         rm -fr node_modules;
         meteor npm install;
+        npm link;
        popd &>/dev/null;
 
       pushd ./gitignored_mmks_layout/ &>/dev/null;
         rm -fr dist;
         rm -fr node_modules;
-        meteor npm install
+        meteor npm install;
+        npm link;
       popd &>/dev/null;
 
       pushd ./mmks_widget/ &>/dev/null;
         rm -fr dist;
         rm -fr node_modules;
-        meteor npm install
+        meteor npm install;
+        npm link;
       popd &>/dev/null;
 
       cp -r ./gitignored_mmks_book ../node_modules/mmks_book;
@@ -113,9 +125,8 @@ pushd ../${pkg_name} &>/dev/null;
     popd &>/dev/null;
 
     npm-link-save mmks_book mmks_layout mmks_widget;
-    # meteor npm install;
 
-    echo -e "${PRTY} Building AndroidAPK as ${APP_NAME}";
+    echo -e "\n\n${PRTY} Building AndroidAPK as ${APP_NAME}";
     BuildAndroidAPK;
 
     echo -e "${PRTY} Renaming APK.";
