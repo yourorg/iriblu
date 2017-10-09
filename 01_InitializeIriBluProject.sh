@@ -41,7 +41,9 @@ nvm ls ${NODE_VERSION} >/dev/null \
 
 
 echo -e "${PRETTY} Prepare 'mmks' ...";
-# rm -fr mmks;
+rm -fr mmks;
+rm -fr ../mmks;
+rm -fr ../IriBluBuilt;
 
 if [[ ! -d ../mmks ]]; then
   echo "../mmks not found. Cloning into parent directory.";
@@ -49,6 +51,10 @@ if [[ ! -d ../mmks ]]; then
     git clone git@github.com:yourse1f-yourorg/mmks.git;
     pushd mmks &>/dev/null;
       git submodule update --init --recursive;
+      git checkout -b ServerBugEntryPoint 2c5e49f1519798e7fcfd1aec3b638ede31dedcf8
+      pushd meteor-mantra-kickstarter &>/dev/null;
+        git checkout -b ServerBugEntryPoint 84e163a6e07d10abc1d826c2b1b024f6b76418d8
+      popd &>/dev/null;
     popd &>/dev/null;
   popd &>/dev/null;
 else

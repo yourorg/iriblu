@@ -163,14 +163,16 @@ pushd ${SCRIPTPATH};
   sudo -A add-apt-repository ppa:certbot/certbot -y;
 
   echo -e "${PRTY} Ensuring mongo-shell can be installed.  "  | tee -a ${LOG};
-  declare MONGO_LST="mongodb-org-3.2.list";
+  declare MONGO_LST="mongodb-org-3.4.list";
   declare MONGO_APT=${APT_SRC_LST}/${MONGO_LST};
   declare UNIQ=$(lsb_release -sc)"/mongodb-org";
-  declare MONGO_SRC="deb http://repo.mongodb.org/apt/ubuntu ${UNIQ}/3.2 multiverse";
+  declare MONGO_SRC="deb http://repo.mongodb.org/apt/ubuntu ${UNIQ}/3.4 multiverse";
 
-  declare MONGO_APT_KEY_HASH="EA312927";
-  apt-key list | grep ${MONGO_APT_KEY_HASH} &>/dev/null \
-     && echo " Have mongo shell apt key." \
+  declare MONGO_APT_KEY_HASH="0C49F3730359A14518585931BC711F9BA15703C6";
+  declare MONGO_APT_KEY_ID="4096R/A15703C6";
+
+  apt-key list | grep ${MONGO_APT_KEY_ID} &>/dev/null \
+     && echo " Have mongo shell apt key :: ${MONGO_APT_KEY_HASH}." \
      || sudo -A apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv ${MONGO_APT_KEY_HASH} >/dev/null;
 
   cat ${MONGO_APT} 2>/dev/null \

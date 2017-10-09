@@ -112,6 +112,12 @@ echo -e "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
 };
 
+
+echo -e "${PRETTY} Get NVM settings ...";
+source utils/target/initNvmMaker.sh;
+initNvmMaker ${USER};
+source ${HOME}/.bash_login;
+
 pushd ../IriBluBuilt &>/dev/null;
 
   echo -e "${PRETTY} validate version bump number ...";

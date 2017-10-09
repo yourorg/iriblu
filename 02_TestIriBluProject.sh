@@ -20,6 +20,14 @@ function TestRun() {
   PROJECT_ROOT=${1}
   killMeteorProcess;
 
+  echo -e "${PRETTY} Get sudo access early, in case Meteor tries to have in background process.";
+  sudo ls /root 2>/dev/null;
+
+  echo -e "${PRETTY} Get NVM settings ...";
+  source utils/target/initNvmMaker.sh;
+  initNvmMaker ${USER};
+  source ${HOME}/.bash_login;
+
   echo -e "${PRETTY} purge test data base ...";
   mkdir -p /tmp/db;
   rm -fr /tmp/db/mmks.sqlite;
